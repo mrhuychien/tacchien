@@ -261,6 +261,25 @@
 .tc-pager-btn:disabled { opacity: 0.35; cursor: default; }
 .tc-pager-info { font-size: 0.82rem; font-weight: 600; color: var(--tc-text-2); }
 
+/* ── Bộ phận (flow pills) ── */
+.tc-flow-green { background: rgba(16, 185, 129, 0.15); color: #047857; }
+.tc-flow-amber { background: rgba(245, 158, 11, 0.16); color: #b45309; }
+.tc-flow-red { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+
+/* ── Domain deep ── */
+.tc-txt-danger { color: var(--tc-danger); font-weight: 700; }
+.tc-text-muted { color: var(--tc-text-3); font-size: 0.85rem; }
+.tc-chan-row { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+.tc-chan { min-width: 90px; }
+.tc-list { display: flex; flex-direction: column; }
+.tc-list-row { padding: 0.5rem 0; border-bottom: 1px solid var(--tc-border); font-size: 0.9rem; }
+.tc-list-row:last-child { border-bottom: 0; }
+.tc-bars { display: flex; align-items: flex-end; gap: 0.4rem; height: 140px; padding-top: 0.5rem; }
+.tc-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.tc-bar { width: 70%; min-height: 2px; background: var(--tc-primary); border-radius: 4px 4px 0 0; }
+.tc-bar-lbl { font-size: 0.65rem; color: var(--tc-text-3); margin-top: 4px; }
+.tc-bar-val { font-size: 0.6rem; color: var(--tc-text-2); }
+
 /* ── TV mode ── */
 .tc-app.tc-tv { padding-top: 0; padding-bottom: 0; }
 .tc-app.tc-tv .tc-main { max-width: 1600px; padding: 1.5rem; }

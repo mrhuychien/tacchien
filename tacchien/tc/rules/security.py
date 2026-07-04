@@ -48,3 +48,45 @@ def on_perm_change(doc, method=None):
     except Exception:
         # Guard tuyệt đối: log, KHÔNG raise (không được làm hỏng thao tác gốc).
         frappe.log_error(frappe.get_traceback(), "tacchien RULE-SEC-01")
+
+
+_WATCH_CANCEL = ("Sales Invoice", "Stock Entry", "Payment Entry", "Delivery Note")
+
+
+def cancel_amend_spike(params, rule):
+    """RULE-SEC-02 (Batch B, P2): 1 user cancel/amend > N docs trong M phút.
+
+    Xấp xỉ: đếm chứng từ docstatus=2 (Cancelled) modified trong cửa sổ, theo user.
+    Baseline 30 ngày để sau; phase B chỉ dùng ngưỡng tuyệt đối.
+    """
+    threshold = int(params.get("threshold", 5))
+    window_min = int(params.get("window_min", 30))
+    since = frappe.utils.add_to_date(frappe.utils.now_datetime(), minutes=-window_min)
+
+    counts: dict[str, int] = {}
+    for dt in _WATCH_CANCEL:
+        if not frappe.db.exists("DocType", dt):
+            continue
+        for r in frappe.db.sql(
+            f"""
+            SELECT modified_by AS u, COUNT(*) AS c
+            FROM `tab{dt}`
+            WHERE docstatus = 2 AND modified > %s
+            GROUP BY modified_by
+            """,
+            (since,),
+            as_dict=True,
+        ):
+            counts[r.u] = counts.get(r.u, 0) + r.c
+
+    for user, cnt in counts.items():
+        if cnt > threshold:
+            emit_signal(
+                signal_type="Bat thuong",
+                severity=rule.get("default_severity") or "P2",
+                domain=rule.get("domain"),
+                title=f"Cancel/amend bất thường: {user}",
+                description=f"{cnt} chứng từ bị huỷ trong {window_min}' (ngưỡng {threshold}).",
+                source_rule=rule.get("rule_code"),
+                user=user,
+            )
