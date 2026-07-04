@@ -1,0 +1,155 @@
+{
+ "actions": [],
+ "creation": "2026-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sec_telegram",
+  "telegram_bot_token",
+  "telegram_chat_id",
+  "col_break_tg",
+  "digest_hour",
+  "sec_giolam",
+  "gio_lam_viec_tu",
+  "gio_lam_viec_den",
+  "col_break_sla",
+  "sla_duyet_gio",
+  "sla_doctypes",
+  "sec_sec",
+  "perm_whitelist_users",
+  "sec_channel",
+  "channel_source",
+  "kenh_mapping",
+  "sec_pos",
+  "pos_watch"
+ ],
+ "fields": [
+  {
+   "fieldname": "sec_telegram",
+   "fieldtype": "Section Break",
+   "label": "Telegram"
+  },
+  {
+   "description": "Nhập sau khi cài. KHÔNG commit vào git.",
+   "fieldname": "telegram_bot_token",
+   "fieldtype": "Password",
+   "label": "Bot token"
+  },
+  {
+   "fieldname": "telegram_chat_id",
+   "fieldtype": "Data",
+   "label": "Chat ID"
+  },
+  {
+   "fieldname": "col_break_tg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "7",
+   "description": "Giờ gửi digest hằng ngày (0-23).",
+   "fieldname": "digest_hour",
+   "fieldtype": "Int",
+   "label": "Giờ digest"
+  },
+  {
+   "fieldname": "sec_giolam",
+   "fieldtype": "Section Break",
+   "label": "Giờ làm việc & SLA"
+  },
+  {
+   "default": "07:30:00",
+   "fieldname": "gio_lam_viec_tu",
+   "fieldtype": "Time",
+   "label": "Giờ làm từ"
+  },
+  {
+   "default": "17:30:00",
+   "fieldname": "gio_lam_viec_den",
+   "fieldtype": "Time",
+   "label": "Giờ làm đến"
+  },
+  {
+   "fieldname": "col_break_sla",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "4",
+   "fieldname": "sla_duyet_gio",
+   "fieldtype": "Int",
+   "label": "SLA duyệt (giờ)"
+  },
+  {
+   "description": "Mỗi dòng một DocType áp SLA draft (RULE-FLOW-01).",
+   "fieldname": "sla_doctypes",
+   "fieldtype": "Small Text",
+   "label": "DocType áp SLA"
+  },
+  {
+   "fieldname": "sec_sec",
+   "fieldtype": "Section Break",
+   "label": "Bảo mật"
+  },
+  {
+   "description": "Mỗi dòng một user được phép đổi permission mà không kích RULE-SEC-01.",
+   "fieldname": "perm_whitelist_users",
+   "fieldtype": "Small Text",
+   "label": "User whitelist đổi permission"
+  },
+  {
+   "fieldname": "sec_channel",
+   "fieldtype": "Section Break",
+   "label": "Mapping kênh"
+  },
+  {
+   "default": "pkd",
+   "description": "pkd = tái dùng mapping app pkd (lazy-import, fallback bảng dưới nếu vắng). settings = chỉ dùng bảng dưới.",
+   "fieldname": "channel_source",
+   "fieldtype": "Select",
+   "label": "Nguồn mapping kênh",
+   "options": "pkd\nsettings"
+  },
+  {
+   "description": "Fallback: map nhóm khách gốc (root Customer Group) → kênh. Con cháu suy theo cây nested set.",
+   "fieldname": "kenh_mapping",
+   "fieldtype": "Table",
+   "label": "Mapping kênh (fallback)",
+   "options": "TC Channel Map"
+  },
+  {
+   "fieldname": "sec_pos",
+   "fieldtype": "Section Break",
+   "label": "Giám sát POS"
+  },
+  {
+   "description": "Danh sách POS Profile cần canh mở ca (RULE-POS-01).",
+   "fieldname": "pos_watch",
+   "fieldtype": "Table",
+   "label": "POS Watch",
+   "options": "TC POS Watch"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tacchien",
+ "name": "TC Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

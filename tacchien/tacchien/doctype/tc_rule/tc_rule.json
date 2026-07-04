@@ -1,0 +1,133 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:rule_code",
+ "creation": "2026-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "rule_code",
+  "title",
+  "domain",
+  "col_break_1",
+  "default_severity",
+  "enabled",
+  "schedule",
+  "sec_impl",
+  "method_path",
+  "params",
+  "sec_run",
+  "last_run",
+  "last_error"
+ ],
+ "fields": [
+  {
+   "fieldname": "rule_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Mã rule",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tên",
+   "reqd": 1
+  },
+  {
+   "fieldname": "domain",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Mảng",
+   "options": "TC Domain",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_severity",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Mức mặc định",
+   "options": "P1\nP2\nP3"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Bật"
+  },
+  {
+   "fieldname": "schedule",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Lịch",
+   "options": "every_5min\nevery_15min\nhourly\ndaily\nevent"
+  },
+  {
+   "fieldname": "sec_impl",
+   "fieldtype": "Section Break",
+   "label": "Cài đặt"
+  },
+  {
+   "description": "Dotted path tới hàm Python trong app, vd tacchien.tc.rules.pos.opening_late",
+   "fieldname": "method_path",
+   "fieldtype": "Data",
+   "label": "Hàm (method path)"
+  },
+  {
+   "description": "Ngưỡng, %, khung giờ… dạng JSON. Sửa runtime, không đụng code.",
+   "fieldname": "params",
+   "fieldtype": "JSON",
+   "label": "Tham số"
+  },
+  {
+   "fieldname": "sec_run",
+   "fieldtype": "Section Break",
+   "label": "Chạy"
+  },
+  {
+   "fieldname": "last_run",
+   "fieldtype": "Datetime",
+   "label": "Chạy lúc",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Lỗi gần nhất",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tacchien",
+ "name": "TC Rule",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

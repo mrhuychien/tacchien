@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "autoname": "NVDK-.####",
+ "creation": "2026-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "ten",
+  "loai",
+  "trang_thai",
+  "col_break_1",
+  "doi_tuong_doctype",
+  "doi_tuong",
+  "sec_han",
+  "ngay_het_han",
+  "chu_ky_gia_han_thang",
+  "col_break_2",
+  "lead_p3_ngay",
+  "lead_p2_ngay",
+  "sec_extra",
+  "ghi_chu",
+  "file_scan"
+ ],
+ "fields": [
+  {
+   "fieldname": "ten",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tên nghĩa vụ",
+   "reqd": 1
+  },
+  {
+   "fieldname": "loai",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Loại",
+   "options": "Giay phep ATTP\nCong bo - TCCS\nAudit - Chung nhan\nHop dong\nHieu chuan thiet bi\nDang kiem - Bao hiem xe\nKham suc khoe\nDao tao\nKhac"
+  },
+  {
+   "default": "Hieu luc",
+   "fieldname": "trang_thai",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Trạng thái",
+   "options": "Hieu luc\nDang gia han\nHet han"
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "doi_tuong_doctype",
+   "fieldtype": "Link",
+   "label": "Đối tượng (DocType)",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "doi_tuong",
+   "fieldtype": "Dynamic Link",
+   "label": "Đối tượng",
+   "options": "doi_tuong_doctype"
+  },
+  {
+   "fieldname": "sec_han",
+   "fieldtype": "Section Break",
+   "label": "Thời hạn"
+  },
+  {
+   "fieldname": "ngay_het_han",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Ngày hết hạn",
+   "reqd": 1
+  },
+  {
+   "fieldname": "chu_ky_gia_han_thang",
+   "fieldtype": "Int",
+   "label": "Chu kỳ gia hạn (tháng)"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "60",
+   "fieldname": "lead_p3_ngay",
+   "fieldtype": "Int",
+   "label": "Lead P3 (ngày)"
+  },
+  {
+   "default": "30",
+   "fieldname": "lead_p2_ngay",
+   "fieldtype": "Int",
+   "label": "Lead P2 (ngày)"
+  },
+  {
+   "fieldname": "sec_extra",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "ghi_chu",
+   "fieldtype": "Small Text",
+   "label": "Ghi chú"
+  },
+  {
+   "fieldname": "file_scan",
+   "fieldtype": "Attach",
+   "label": "File scan"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tacchien",
+ "name": "TC Obligation",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "ngay_het_han",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}
