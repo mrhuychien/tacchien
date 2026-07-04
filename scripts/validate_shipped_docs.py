@@ -115,7 +115,7 @@ def main() -> int:
     else:
         for sub in sorted(os.listdir(DOCTYPE_DIR)):
             d = os.path.join(DOCTYPE_DIR, sub)
-            if not os.path.isdir(d):
+            if not os.path.isdir(d) or sub == "__pycache__":
                 continue
             jf = os.path.join(d, f"{sub}.json")
             if not os.path.exists(jf):
