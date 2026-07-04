@@ -221,6 +221,46 @@
   padding: 8px; font-size: 0.85rem;
 }
 
+/* ── Filter bar ── */
+.tc-filter-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+.tc-filter-field { display: flex; flex-direction: column; gap: 3px; }
+.tc-filter-field select {
+  padding: 8px 10px; border-radius: var(--tc-radius-sm); border: 1px solid var(--tc-border);
+  background: var(--tc-surface); color: var(--tc-text); font-weight: 600; font-size: 0.85rem;
+}
+
+/* ── Signal card ── */
+.tc-signals-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.tc-sig-card { padding: 0.85rem 1rem; }
+.tc-sig-head { display: flex; align-items: center; gap: 0.5rem; }
+.tc-sig-title { font-weight: 700; flex: 1; min-width: 0; }
+.tc-sig-meta { font-size: 0.75rem; color: var(--tc-text-2); margin-top: 4px; }
+.tc-sig-desc { font-size: 0.85rem; color: var(--tc-text); margin-top: 6px; }
+.tc-sig-actions { display: flex; gap: 0.4rem; margin-top: 0.75rem; align-items: center; }
+.tc-badge-status { font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 50px; text-transform: uppercase; }
+.tc-st-open { background: #dbeafe; color: #1e40af; }
+.tc-st-acked { background: #fef3c7; color: #92400e; }
+.tc-st-resolved { background: #d1fae5; color: #065f46; }
+.tc-st-muted { background: #e2e8f0; color: #475569; }
+.tc-mute-wrap { position: relative; }
+.tc-mute-menu {
+  position: absolute; bottom: calc(100% + 4px); left: 0; z-index: 20;
+  background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: var(--tc-radius-sm);
+  box-shadow: var(--tc-shadow-lg); display: flex; flex-direction: column; min-width: 120px; overflow: hidden;
+}
+.tc-mute-menu[hidden] { display: none; }
+.tc-mute-opt { padding: 8px 12px; border: none; background: transparent; text-align: left; cursor: pointer; font-size: 0.85rem; }
+.tc-mute-opt:hover { background: var(--tc-surface-2); }
+
+/* ── Pager ── */
+.tc-pager { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 0 2px; }
+.tc-pager-btn {
+  padding: 6px 14px; border: 1px solid var(--tc-border); border-radius: 999px;
+  background: var(--tc-surface); color: var(--tc-text); font-weight: 700; font-size: 0.85rem; cursor: pointer;
+}
+.tc-pager-btn:disabled { opacity: 0.35; cursor: default; }
+.tc-pager-info { font-size: 0.82rem; font-weight: 600; color: var(--tc-text-2); }
+
 /* ── TV mode ── */
 .tc-app.tc-tv { padding-top: 0; padding-bottom: 0; }
 .tc-app.tc-tv .tc-main { max-width: 1600px; padding: 1.5rem; }
