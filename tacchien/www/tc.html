@@ -1,0 +1,51 @@
+{% extends "templates/web.html" %}
+
+{%- set v = (frappe.utils.now() | replace(" ", "T") | replace(":", "-")) -%}
+{%- set base = "/assets/tacchien/tc" -%}
+
+{% block title %}Màn hình tác chiến{% endblock %}
+
+{% block head_include %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ base }}/shell.css?v={{ v }}">
+
+<!-- LUẬT VÀNG #1: import map remap mọi shared module sang bản ?v= (ES static import bỏ query) -->
+<script type="importmap">
+{
+  "imports": {
+    "{{ base }}/lib/dom.js":            "{{ base }}/lib/dom.js?v={{ v }}",
+    "{{ base }}/lib/format.js":         "{{ base }}/lib/format.js?v={{ v }}",
+    "{{ base }}/lib/api.js":            "{{ base }}/lib/api.js?v={{ v }}",
+    "{{ base }}/lib/router.js":         "{{ base }}/lib/router.js?v={{ v }}",
+    "{{ base }}/lib/realtime.js":       "{{ base }}/lib/realtime.js?v={{ v }}",
+    "{{ base }}/components/header.js":  "{{ base }}/components/header.js?v={{ v }}",
+    "{{ base }}/components/bottom-nav.js": "{{ base }}/components/bottom-nav.js?v={{ v }}",
+    "{{ base }}/components/toast.js":   "{{ base }}/components/toast.js?v={{ v }}",
+    "{{ base }}/components/banner.js":  "{{ base }}/components/banner.js?v={{ v }}"
+  }
+}
+</script>
+
+<script>
+window.TC_CONTEXT = {
+  user: {{ tc_user | tojson }},
+  isManager: {{ (tc_is_manager or false) | tojson }},
+  roles: {{ tc_roles | tojson }},
+  csrfToken: {{ csrf_token | tojson }},
+  assetVersion: {{ v | tojson }},
+  build: {{ shell_build | tojson }},
+  base: {{ base | tojson }}
+};
+</script>
+{% endblock %}
+
+{% block page_content %}
+<div id="tc-app" class="tc-app">
+  <div id="tc-view" class="tc-main"><div class="tc-skeleton" style="height:200px"></div></div>
+  <div id="tc-toast-mount" class="tc-toast-mount"></div>
+</div>
+<script type="module" src="{{ base }}/shell.js?v={{ v }}"></script>
+{% endblock %}
