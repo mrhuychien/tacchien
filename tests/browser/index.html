@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>tc harness</title>
+<script type="importmap">
+{ "imports": {
+  "/assets/tacchien/tc/lib/dom.js": "/assets/tacchien/tc/lib/dom.js?v=1",
+  "/assets/tacchien/tc/lib/format.js": "/assets/tacchien/tc/lib/format.js?v=1",
+  "/assets/tacchien/tc/lib/api.js": "/assets/tacchien/tc/lib/api.js?v=1",
+  "/assets/tacchien/tc/lib/router.js": "/assets/tacchien/tc/lib/router.js?v=1",
+  "/assets/tacchien/tc/lib/realtime.js": "/assets/tacchien/tc/lib/realtime.js?v=1",
+  "/assets/tacchien/tc/components/header.js": "/assets/tacchien/tc/components/header.js?v=1",
+  "/assets/tacchien/tc/components/bottom-nav.js": "/assets/tacchien/tc/components/bottom-nav.js?v=1",
+  "/assets/tacchien/tc/components/toast.js": "/assets/tacchien/tc/components/toast.js?v=1",
+  "/assets/tacchien/tc/components/banner.js": "/assets/tacchien/tc/components/banner.js?v=1"
+}}
+</script>
+<script>
+window.TC_CONTEXT = { user: "test@x", isManager: true, roles: ["Tac Chien"], csrfToken: "", assetVersion: "1", build: "0.1.0", base: "/assets/tacchien/tc" };
+// Chart.js CDN bị chặn → stub bắt buộc.
+window.Chart = class { constructor(){} destroy(){} };
+const OVERVIEW = {
+  health: [
+    { domain: "Mua hàng · NCC", cluster: "Dau vao & nha may", count: 0, max_sev: null },
+    { domain: "Kho · tồn · HSD", cluster: "Dau vao & nha may", count: 2, max_sev: "P1" },
+    { domain: "Sản xuất", cluster: "Dau vao & nha may", count: 0, max_sev: null },
+    { domain: "Chất lượng · FSMS", cluster: "Dau vao & nha may", count: 1, max_sev: "P3" },
+    { domain: "Tài sản · bảo trì", cluster: "Dau vao & nha may", count: 0, max_sev: null },
+    { domain: "Bán hàng", cluster: "Dau ra & thi truong", count: 3, max_sev: "P2" },
+    { domain: "Vận chuyển", cluster: "Dau ra & thi truong", count: 0, max_sev: null },
+    { domain: "Sau bán · khiếu nại", cluster: "Dau ra & thi truong", count: 0, max_sev: null },
+    { domain: "Trade · trưng bày", cluster: "Dau ra & thi truong", count: 0, max_sev: null },
+    { domain: "Tài chính · dòng tiền", cluster: "Nen tang", count: 5, max_sev: "P2" },
+    { domain: "Nhân sự", cluster: "Nen tang", count: 0, max_sev: null },
+    { domain: "Pháp lý · tuân thủ", cluster: "Nen tang", count: 1, max_sev: "P1" },
+    { domain: "Hệ thống", cluster: "Nen tang", count: 0, max_sev: null }
+  ],
+  metrics: {
+    revenue_today: 1620000000,
+    revenue_by_channel: { MT: 900000000, NPP: 500000000, DL: 220000000 },
+    cash_in_today: 330000000,
+    new_orders: 42,
+    signals_open: { P1: 2, P2: 8, P3: 3 }
+  },
+  sparkline: {
+    labels: Array.from({length:14}, (_,i)=>`2026-06-${String(i+1).padStart(2,'0')}`),
+    revenue: Array.from({length:14}, (_,i)=> (i+1)*1e8),
+    avg_same_weekday: Array.from({length:14}, ()=> 1.2e9)
+  },
+  feed: [
+    { name:"SIG-00001", severity:"P1", domain:"Kho · tồn · HSD", title:"Tồn âm: SP-01 @ Kho A", description:"", status:"Open", occurrence_count:3, ref_doctype:"Warehouse", ref_name:"Kho A", creation:"2026-07-04 09:00:00" },
+    { name:"SIG-00002", severity:"P2", domain:"Bán hàng", title:"SI lệch giá 18%", description:"", status:"Open", occurrence_count:1, ref_doctype:null, ref_name:null, creation:"2026-07-04 08:30:00" }
+  ],
+  generated_at: "2026-07-04 09:05:00"
+};
+const SIGNALS = {
+  rows: [
+    { name:"SIG-00001", severity:"P1", domain:"Kho · tồn · HSD", title:"Tồn âm: SP-01 @ Kho A", description:"Tồn -5", status:"Open", source_rule:"RULE-INV-01", user:null, ref_doctype:"Warehouse", ref_name:"Kho A", occurrence_count:3, first_seen:"2026-07-04 09:00:00", last_seen:"2026-07-04 09:30:00", acked_by:null, muted_until:null, creation:"2026-07-04 09:00:00" },
+    { name:"SIG-00002", severity:"P2", domain:"Bán hàng", title:"SI lệch giá 18%", description:"", status:"Acked", source_rule:"RULE-SAL-01", user:"sale@x", ref_doctype:null, ref_name:null, occurrence_count:1, first_seen:"2026-07-04 08:30:00", last_seen:"2026-07-04 08:30:00", acked_by:"boss@x", muted_until:null, creation:"2026-07-04 08:30:00" }
+  ],
+  total: 2, page: 1, page_size: 20,
+  domains: ["Kho · tồn · HSD","Bán hàng","Hệ thống"]
+};
+const BOPHAN = { sla_hours: 4, rows: [
+  { dept:"Bán hàng", today:12, stuck:0, oldest_h:0, status:"green" },
+  { dept:"Kho", today:5, stuck:2, oldest_h:6, status:"amber" },
+  { dept:"Mua hàng", today:1, stuck:6, oldest_h:20, status:"red" },
+  { dept:"Tài chính", today:3, stuck:0, oldest_h:0, status:"green" }
+]};
+const DOMAIN_FIN = { domain:"Tài chính · dòng tiền", deep:"finance",
+  detail:{ aging:[{customer:"KH A",current:1e6,d30:2e6,d60:0,d60p:5e6,total:8e6}], cash_7d:[{d:"2026-07-01",v:3e8},{d:"2026-07-02",v:1e8}] },
+  signals:[{ name:"SIG-9", severity:"P2", title:"Công nợ quá hạn: KH A", description:"", status:"Open", occurrence_count:1, ref_doctype:"Customer", ref_name:"KH A", last_seen:"2026-07-04 08:00:00", creation:"2026-07-04 08:00:00" }] };
+window.fetch = async (url, opts) => {
+  let body = { message: {} };
+  if (url.includes("get_overview")) body = { message: OVERVIEW };
+  else if (url.includes("get_bophan")) body = { message: BOPHAN };
+  else if (url.includes("get_domain")) body = { message: DOMAIN_FIN };
+  else if (url.includes("get_signals")) body = { message: SIGNALS };
+  else if (url.includes("act_on_signal")) {
+    const args = JSON.parse((opts && opts.body) || "{}");
+    body = { message: { name: args.name, status: args.action === "ack" ? "Acked" : args.action === "resolve" ? "Resolved" : "Muted", acked_by: "test@x", muted_until: null } };
+  }
+  return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(body)) };
+};
+</script>
+</head>
+<body>
+<div id="tc-app" class="tc-app">
+  <div id="tc-view" class="tc-main"><div class="tc-skeleton" style="height:200px"></div></div>
+  <div id="tc-toast-mount" class="tc-toast-mount"></div>
+</div>
+<script type="module" src="/assets/tacchien/tc/shell.js?v=1"></script>
+</body>
+</html>

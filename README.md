@@ -35,9 +35,11 @@ python3 -m py_compile $(find tacchien -name '*.py')
 | Build | Nội dung | Trạng thái |
 |---|---|---|
 | 1 | Scaffold + 7 DocType + fixtures + install.py | ✅ |
-| 2 | emit_signal + dispatcher + 3 rule Batch A + test | ⏳ |
-| 3 | Telegram notifier + digest | ⏳ |
-| 4 | SPA shell + `#/` tổng quan + realtime | ⏳ |
-| 5 | `#/signals` + ack/resolve/mute | ⏳ |
-| 6 | Rules Batch A còn lại + `#/bophan` + 3 domain view | ⏳ |
-| 7 | Verify-before-ship + runbook Batch B | ⏳ |
+| 2 | emit_signal + dispatcher + 3 rule Batch A + test | ✅ |
+| 3 | Telegram notifier + digest | ✅ |
+| 4 | SPA shell + `#/` tổng quan + realtime | ✅ |
+| 5 | `#/signals` + ack/resolve/mute | ✅ |
+| 6 | Rules Batch A còn lại + `#/bophan` + 3 domain view | ✅ |
+| 7 | Verify-before-ship + runbook Batch B | ✅ |
+
+Phase 1 hoàn tất — nghiệm thu trên site dev theo [`docs/runbook.md`](docs/runbook.md).

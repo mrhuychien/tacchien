@@ -38,9 +38,10 @@ scheduler_events = {
 # ---------------------------------------------------------------------------
 _perm_handler = "tacchien.tc.rules.security.on_perm_change"
 doc_events = {
+    # User: chỉ tạo mới / xoá (đổi mật khẩu, last_login... KHÔNG phải đổi quyền →
+    # tránh false-positive). Gán/thu hồi role đi qua "Has Role" bên dưới.
     "User": {
         "after_insert": _perm_handler,
-        "on_update": _perm_handler,
         "on_trash": _perm_handler,
     },
     "Has Role": {
