@@ -43,6 +43,14 @@ def tick():
         except Exception:
             _mark_error(rule)
 
+    # Digest hằng ngày dùng chung heartbeat này (guard 1 lần/ngày ở trong).
+    try:
+        from tacchien.tc.notify.digest import maybe_send_digest
+
+        maybe_send_digest(now)
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "tacchien digest")
+
 
 def parse_params(rule) -> dict:
     raw = rule.get("params")

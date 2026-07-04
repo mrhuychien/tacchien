@@ -21,7 +21,8 @@
   "channel_source",
   "kenh_mapping",
   "sec_pos",
-  "pos_watch"
+  "pos_watch",
+  "last_digest_date"
  ],
  "fields": [
   {
@@ -126,6 +127,14 @@
    "fieldtype": "Table",
    "label": "POS Watch",
    "options": "TC POS Watch"
+  },
+  {
+   "description": "Ngày digest gửi gần nhất (yyyy-mm-dd) — chống gửi trùng trong ngày.",
+   "fieldname": "last_digest_date",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Last digest date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
