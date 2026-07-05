@@ -290,7 +290,22 @@ Số liệu doanh thu: `is_opening!='Yes'`, return âm, kênh qua §4 R1, period
 - Vanilla ES module **code-split**, hash router, **import-map cache-bust mọi shared module** (luật vàng #1), `withV()` cho view động. **CSS prefix `tc-` toàn bộ** (không class trần). `escapeHtml` mọi render. Chart.js lazy + destroy trước vẽ lại.
 - Style: kế thừa `design-system.md` — token `:root`, glass header 56px + bottom-nav, card bo tròn, semantic color cho severity (P1=danger, P2=warning, sạch=success). **Đây là app nội bộ/monitor** nên có thể rút còn 1 theme (bỏ season-picker) — health strip cần màu ngữ nghĩa ổn định, không đổi theo mùa.
 
-**4 routes:** `#/` Tổng quan (health strip 13 ô/3 cụm, 4 số nhịp, sparkline, feed 10) · `#/domain/:name` · `#/bophan` · `#/signals` (filter + ack/resolve/mute optimistic). **Realtime** subscribe `tc_signal_new` → prepend + update màu ô; fallback polling 60s. **TV mode** `#/?tv=1` ẩn nav, phóng font, refresh 60s.
+**Realtime** subscribe `tc_signal_new` → prepend + update; fallback polling 60s. **TV mode** `#/?tv=1` ẩn nav, phóng font, refresh 60s.
+
+> **⟳ IA sửa đổi (redesign 3 trụ — thay thế "4 routes" cũ):** SPA tổ chức quanh **3 trụ**
+> làm điều hướng cấp cao (bottom-nav), phân loại bằng field **`pillar`** (`giam_sat`/`bao_cao`)
+> trên TC Rule + TC Domain, gán vào TC Signal lúc `emit_signal`.
+>
+> | Trụ | Route | Nội dung |
+> |---|---|---|
+> | **Báo cáo hoạt động** (mặc định) | `#/` | KPI nghiệp vụ + sparkline + thẻ mảng `bao_cao` (drill-down) + tóm tắt nhịp bộ phận + feed. API `baocao.get_baocao` |
+> | **Giám sát an toàn** | `#/giamsat` | Bảng chỉ số an toàn: mỗi mảng `giam_sat` → rule làm indicator (enabled/last_run/last_error + signal mở → dot xanh/vàng/đỏ/xanh dương/tắt), read-only. API `giamsat.get_giamsat` |
+> | **Hành động** | `#/hanhdong` (alias `#/signals`) | Hàng đợi **mọi** signal mở + filter (trụ/severity/mảng/trạng thái) + ack/resolve/mute optimistic. API `signals.get_signals`+`act_on_signal` |
+> | Drill-down | `#/domain/:name`, `#/bophan` | giữ nguyên |
+>
+> "2 lăng kính, cùng dữ liệu": signal `giam_sat` mở tô đỏ ô Giám sát **và** nằm trong hàng đợi
+> Hành động. Bảng phân loại pillar là fixture-data, sửa fixture + `migrate` là đổi (patch
+> `backfill_signal_pillar` cập nhật signal cũ).
 
 ---
 

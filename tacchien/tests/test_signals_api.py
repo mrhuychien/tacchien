@@ -68,6 +68,22 @@ class TestSignalsApi(FrappeTestCase):
         self.assertIn(self.sig, names)
         self.assertEqual(len(data["domains"]), frappe.db.count("TC Domain", {"is_active": 1}))
 
+    def test_get_signals_pillar_filter(self):
+        # signal của setUp có pillar giam_sat (rule không tồn tại → mặc định).
+        gs = get_signals(pillar="giam_sat")
+        self.assertIn(self.sig, [r["name"] for r in gs["rows"]])
+        bc = get_signals(pillar="bao_cao")
+        self.assertNotIn(self.sig, [r["name"] for r in bc["rows"]])
+
+    def test_giamsat_structure(self):
+        from tacchien.api.giamsat import get_giamsat
+
+        data = get_giamsat()
+        self.assertIn("domains", data)
+        self.assertIn("summary", data)
+        for key in ("P1", "P2", "P3", "checks_failing", "checks_off"):
+            self.assertIn(key, data["summary"])
+
     def test_permission_denied_without_role(self):
         user = self._make_noperm_user()
         frappe.set_user(user)

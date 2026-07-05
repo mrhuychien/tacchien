@@ -56,8 +56,8 @@ const OVERVIEW = {
 };
 const SIGNALS = {
   rows: [
-    { name:"SIG-00001", severity:"P1", domain:"Kho · tồn · HSD", title:"Tồn âm: SP-01 @ Kho A", description:"Tồn -5", status:"Open", source_rule:"RULE-INV-01", user:null, ref_doctype:"Warehouse", ref_name:"Kho A", occurrence_count:3, first_seen:"2026-07-04 09:00:00", last_seen:"2026-07-04 09:30:00", acked_by:null, muted_until:null, creation:"2026-07-04 09:00:00" },
-    { name:"SIG-00002", severity:"P2", domain:"Bán hàng", title:"SI lệch giá 18%", description:"", status:"Acked", source_rule:"RULE-SAL-01", user:"sale@x", ref_doctype:null, ref_name:null, occurrence_count:1, first_seen:"2026-07-04 08:30:00", last_seen:"2026-07-04 08:30:00", acked_by:"boss@x", muted_until:null, creation:"2026-07-04 08:30:00" }
+    { name:"SIG-00001", severity:"P1", pillar:"giam_sat", domain:"Kho · tồn · HSD", title:"Tồn âm: SP-01 @ Kho A", description:"Tồn -5", status:"Open", source_rule:"RULE-INV-01", user:null, ref_doctype:"Warehouse", ref_name:"Kho A", occurrence_count:3, first_seen:"2026-07-04 09:00:00", last_seen:"2026-07-04 09:30:00", acked_by:null, muted_until:null, creation:"2026-07-04 09:00:00" },
+    { name:"SIG-00002", severity:"P2", pillar:"bao_cao", domain:"Bán hàng", title:"SI lệch giá 18%", description:"", status:"Acked", source_rule:"RULE-SAL-01", user:"sale@x", ref_doctype:null, ref_name:null, occurrence_count:1, first_seen:"2026-07-04 08:30:00", last_seen:"2026-07-04 08:30:00", acked_by:"boss@x", muted_until:null, creation:"2026-07-04 08:30:00" }
   ],
   total: 2, page: 1, page_size: 20,
   domains: ["Kho · tồn · HSD","Bán hàng","Hệ thống"]
@@ -71,9 +71,37 @@ const BOPHAN = { sla_hours: 4, rows: [
 const DOMAIN_FIN = { domain:"Tài chính · dòng tiền", deep:"finance",
   detail:{ aging:[{customer:"KH A",current:1e6,d30:2e6,d60:0,d60p:5e6,total:8e6}], cash_7d:[{d:"2026-07-01",v:3e8},{d:"2026-07-02",v:1e8}] },
   signals:[{ name:"SIG-9", severity:"P2", title:"Công nợ quá hạn: KH A", description:"", status:"Open", occurrence_count:1, ref_doctype:"Customer", ref_name:"KH A", last_seen:"2026-07-04 08:00:00", creation:"2026-07-04 08:00:00" }] };
+const BAOCAO = {
+  metrics: OVERVIEW.metrics,
+  sparkline: OVERVIEW.sparkline,
+  domains: [
+    { domain:"Bán hàng", cluster:"Dau ra & thi truong", count:3, max_sev:"P2" },
+    { domain:"Tài chính · dòng tiền", cluster:"Nen tang", count:5, max_sev:"P2" },
+    { domain:"Mua hàng · NCC", cluster:"Dau vao & nha may", count:0, max_sev:null }
+  ],
+  bophan: BOPHAN,
+  feed: [ { name:"SIG-00002", severity:"P2", domain:"Bán hàng", title:"SI lệch giá 18%", status:"Open", occurrence_count:1, creation:"2026-07-04 08:30:00" } ],
+  generated_at: "2026-07-04 09:05:00"
+};
+const GIAMSAT = {
+  summary: { P1:2, P2:3, P3:1, checks_failing:1, checks_off:9 },
+  domains: [
+    { domain:"Kho · tồn · HSD", cluster:"Dau vao & nha may", open:2, max_sev:"P1", indicators:[
+      { rule_code:"RULE-INV-01", title:"Tồn âm item/kho", enabled:1, schedule:"every_15min", last_run:"2026-07-04 09:00:00", has_error:false, open:2, max_sev:"P1", state:"red" },
+      { rule_code:"RULE-INV-02", title:"Thành phẩm cận HSD", enabled:1, schedule:"daily", last_run:"2026-07-04 06:00:00", has_error:false, open:0, max_sev:null, state:"green" }
+    ]},
+    { domain:"Hệ thống", cluster:"Nen tang", open:0, max_sev:null, indicators:[
+      { rule_code:"RULE-SYS-02", title:"Backup đêm qua", enabled:1, schedule:"daily", last_run:"2026-07-04 07:00:00", has_error:true, open:0, max_sev:null, state:"red" }
+    ]},
+    { domain:"Sản xuất", cluster:"Dau vao & nha may", open:0, max_sev:null, indicators:[] }
+  ],
+  generated_at: "2026-07-04 09:05:00"
+};
 window.fetch = async (url, opts) => {
   let body = { message: {} };
-  if (url.includes("get_overview")) body = { message: OVERVIEW };
+  if (url.includes("get_baocao")) body = { message: BAOCAO };
+  else if (url.includes("get_giamsat")) body = { message: GIAMSAT };
+  else if (url.includes("get_overview")) body = { message: OVERVIEW };
   else if (url.includes("get_bophan")) body = { message: BOPHAN };
   else if (url.includes("get_domain")) body = { message: DOMAIN_FIN };
   else if (url.includes("get_signals")) body = { message: SIGNALS };

@@ -43,3 +43,8 @@ python3 -m py_compile $(find tacchien -name '*.py')
 | 7 | Verify-before-ship + runbook Batch B | ✅ |
 
 Phase 1 hoàn tất — nghiệm thu trên site dev theo [`docs/runbook.md`](docs/runbook.md).
+
+**Redesign 3 trụ** (điều hướng cấp cao, phân loại bằng field `pillar`):
+1. **Báo cáo hoạt động** (`#/`, mặc định) — KPI nghiệp vụ + thẻ mảng + nhịp bộ phận.
+2. **Giám sát an toàn** (`#/giamsat`) — bảng chỉ số an toàn (rule = indicator), read-only.
+3. **Hành động** (`#/hanhdong`) — hàng đợi mọi signal mở, ack/resolve/mute.

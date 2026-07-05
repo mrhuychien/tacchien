@@ -43,9 +43,33 @@ class TestEmitSignal(FrappeTestCase):
         doc = frappe.get_doc("TC Signal", name)
         self.assertEqual(doc.occurrence_count, 1)
         self.assertEqual(doc.status, "Open")
+        self.assertEqual(doc.pillar, "giam_sat")  # rule không tồn tại → mặc định
         self.assertEqual(
             doc.dedup_key, dedup_key(RULE, DOMAIN, "Warehouse", "W-01", "tồn âm A")
         )
+
+    def test_pillar_from_rule(self):
+        code = "RULE-TEST-PILLAR"
+        if not frappe.db.exists("TC Rule", code):
+            frappe.get_doc(
+                {
+                    "doctype": "TC Rule",
+                    "rule_code": code,
+                    "title": "test pillar",
+                    "domain": DOMAIN,
+                    "default_severity": "P2",
+                    "pillar": "bao_cao",
+                    "method_path": "tacchien.tc.rules.pos.opening_late",
+                }
+            ).insert(ignore_permissions=True)
+        frappe.cache().hdel("tc_rule_pillar", code)
+        name = emit_signal(
+            signal_type="Nguong", severity="P2", domain=DOMAIN,
+            title="pillar theo rule", source_rule=code,
+        )
+        self.assertEqual(frappe.db.get_value("TC Signal", name, "pillar"), "bao_cao")
+        frappe.db.delete("TC Signal", {"source_rule": code})
+        frappe.delete_doc("TC Rule", code, ignore_permissions=True, force=True)
 
     def test_increment_and_escalate(self):
         first = self._emit(severity="P2")
