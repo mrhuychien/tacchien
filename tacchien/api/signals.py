@@ -11,6 +11,7 @@ from tacchien.api._guard import guard
 _FIELDS = [
     "name",
     "severity",
+    "pillar",
     "domain",
     "title",
     "description",
@@ -31,7 +32,7 @@ _MUTE_PRESETS = {"1h": {"hours": 1}, "1d": {"days": 1}, "1w": {"days": 7}}
 
 
 @frappe.whitelist()
-def get_signals(severity=None, domain=None, status=None, user=None, page=1, page_size=20):
+def get_signals(severity=None, domain=None, status=None, user=None, pillar=None, page=1, page_size=20):
     guard()
     filters = {}
     if severity:
@@ -40,6 +41,8 @@ def get_signals(severity=None, domain=None, status=None, user=None, page=1, page
         filters["domain"] = domain
     if user:
         filters["user"] = user
+    if pillar:
+        filters["pillar"] = pillar
     if status:
         filters["status"] = status
     else:
@@ -98,7 +101,9 @@ def act_on_signal(name, action, mute_preset=None, muted_until=None):
         frappe.throw(_("Hành động không hợp lệ: {0}").format(action))
 
     doc.save(ignore_permissions=True)
-    frappe.cache().delete_value("tc_overview")  # health strip cập nhật ngay
+    # Cập nhật ngay các bảng đọc-cache của 3 trụ.
+    for key in ("tc_overview", "tc_baocao", "tc_giamsat"):
+        frappe.cache().delete_value(key)
     return {
         "name": doc.name,
         "status": doc.status,

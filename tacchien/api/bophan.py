@@ -22,6 +22,11 @@ _DEPTS = [
 @frappe.whitelist()
 def get_bophan():
     guard()
+    return compute_bophan()
+
+
+def compute_bophan():
+    """Core dùng chung (Báo cáo tái dùng, không guard lại)."""
     now = now_datetime()
     today = frappe.utils.getdate(now)
     sla_hours = int(frappe.db.get_single_value("TC Settings", "sla_duyet_gio") or 4)
