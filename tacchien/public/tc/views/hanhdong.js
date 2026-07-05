@@ -1,4 +1,4 @@
-// views/signals.js — #/signals: feed đầy đủ + filter + ack/resolve/mute (optimistic).
+// views/hanhdong.js — Trụ 3: Hệ thống hành động (hàng đợi mọi signal mở).
 import { call } from "../lib/api.js";
 import { html, setHTML } from "../lib/dom.js";
 import { relTime } from "../lib/format.js";
@@ -8,6 +8,10 @@ import { replaceQuery } from "../lib/router.js";
 
 const SEVERITIES = ["P1", "P2", "P3"];
 const STATUSES = ["Open", "Acked", "Resolved", "Muted"];
+const PILLARS = [
+  { key: "giam_sat", label: "Giám sát" },
+  { key: "bao_cao", label: "Báo cáo" },
+];
 const MUTE_PRESETS = [
   { key: "1h", label: "1 giờ" },
   { key: "1d", label: "1 ngày" },
@@ -23,6 +27,7 @@ export async function render({ container, query }) {
       severity: query.severity || "",
       domain: query.domain || "",
       status: query.status || "",
+      pillar: query.pillar || "",
       user: query.user || "",
       page: parseInt(query.page || "1", 10),
     },
@@ -38,12 +43,12 @@ async function load() {
   setHTML(S.container, html`<div class="tc-skeleton" style="height:200px"></div>`);
   try {
     S.data = await call("tacchien.api.signals.get_signals", {
-      severity: f.severity, domain: f.domain, status: f.status, user: f.user,
-      page: f.page, page_size: 20,
+      severity: f.severity, domain: f.domain, status: f.status, pillar: f.pillar,
+      user: f.user, page: f.page, page_size: 20,
     });
   } catch (e) {
     setHTML(S.container, html`<div class="tc-empty"><div class="tc-empty-icon">⚠️</div>
-      <div class="tc-empty-title">Lỗi tải tín hiệu</div><div>${e.message || e}</div></div>`);
+      <div class="tc-empty-title">Lỗi tải hành động</div><div>${e.message || e}</div></div>`);
     return;
   }
   paint();
@@ -56,38 +61,41 @@ function paint() {
   setHTML(
     S.container,
     html`
-      ${viewBanner({ title: "Tín hiệu", subtitle: `${d.total} tín hiệu`, badge: `Trang ${f.page}/${pages}` })}
+      ${viewBanner({ title: "Hành động", subtitle: `${d.total} việc cần xử lý`, badge: `Trang ${f.page}/${pages}` })}
       <div class="tc-card tc-filter-bar">
+        ${sel("pillar", "Trụ", PILLARS.map((p) => p.key), f.pillar, "Tất cả", PILLARS)}
         ${sel("severity", "Mức", SEVERITIES, f.severity)}
         ${sel("domain", "Mảng", d.domains, f.domain)}
         ${sel("status", "Trạng thái", STATUSES, f.status, "Open+Acked")}
       </div>
       <div class="tc-signals-list tc-mt-3">
-        ${d.rows.length ? d.rows.map(rowCard) : html`<div class="tc-empty"><div class="tc-empty-icon">📭</div><div class="tc-empty-title">Không có tín hiệu khớp lọc</div></div>`}
+        ${d.rows.length ? d.rows.map(rowCard) : html`<div class="tc-empty"><div class="tc-empty-icon">✅</div><div class="tc-empty-title">Không có việc khớp lọc</div></div>`}
       </div>
       ${pager(f.page, pages)}`
   );
 }
 
-function sel(name, label, options, value, allLabel = "Tất cả") {
+function sel(name, label, options, value, allLabel = "Tất cả", labeled) {
+  const lbl = (o) => (labeled ? (labeled.find((x) => x.key === o) || {}).label || o : o);
   return html`<label class="tc-filter-field">
     <span class="tc-label">${label}</span>
     <select data-filter="${name}">
       <option value="" ${value ? "" : "selected"}>${allLabel}</option>
-      ${options.map((o) => html`<option value="${o}" ${value === o ? "selected" : ""}>${o}</option>`)}
+      ${options.map((o) => html`<option value="${o}" ${value === o ? "selected" : ""}>${lbl(o)}</option>`)}
     </select>
   </label>`;
 }
 
 function rowCard(r) {
   const closed = r.status === "Resolved" || r.status === "Muted";
+  const pillarLabel = r.pillar === "bao_cao" ? "Báo cáo" : "Giám sát";
   return html`<div class="tc-card tc-sig-card" data-row="${r.name}">
     <div class="tc-sig-head">
       <span class="tc-pill tc-sev-${r.severity.toLowerCase()}">${r.severity}</span>
       <span class="tc-sig-title">${r.title}${(r.occurrence_count || 1) > 1 ? html`<span class="tc-feed-x"> ×${r.occurrence_count}</span>` : ""}</span>
       <span class="tc-badge-status tc-st-${r.status.toLowerCase()}" data-status>${r.status}</span>
     </div>
-    <div class="tc-sig-meta">${r.domain}${r.source_rule ? " · " + r.source_rule : ""}${r.user ? " · " + r.user : ""} · ${relTime(r.last_seen || r.creation)}</div>
+    <div class="tc-sig-meta">${pillarLabel} · ${r.domain}${r.source_rule ? " · " + r.source_rule : ""}${r.user ? " · " + r.user : ""} · ${relTime(r.last_seen || r.creation)}</div>
     ${r.description ? html`<div class="tc-sig-desc">${r.description}</div>` : ""}
     <div class="tc-sig-actions" data-actions>
       ${closed
@@ -131,7 +139,7 @@ function bind() {
 function syncUrl() {
   const f = S.filters;
   const q = {};
-  ["severity", "domain", "status", "user"].forEach((k) => f[k] && (q[k] = f[k]));
+  ["severity", "domain", "status", "pillar", "user"].forEach((k) => f[k] && (q[k] = f[k]));
   if (f.page > 1) q.page = f.page;
   replaceQuery(q);
 }
@@ -147,7 +155,6 @@ async function onClick(e) {
   if (!btn) return;
   const doIt = btn.dataset.do;
   const name = btn.dataset.sig;
-
   if (doIt === "mute-menu") {
     const menu = btn.parentElement.querySelector(".tc-mute-menu");
     if (menu) menu.hidden = !menu.hidden;
@@ -159,23 +166,21 @@ async function onClick(e) {
 async function act(name, action, preset) {
   const card = S.container.querySelector(`[data-row="${name}"]`);
   const actions = card ? card.querySelector("[data-actions]") : null;
-  if (actions) actions.style.opacity = "0.5"; // optimistic: khoá tạm
+  if (actions) actions.style.opacity = "0.5";
   try {
-    const res = await call("tacchien.api.signals.act_on_signal", {
-      name, action, mute_preset: preset || null,
-    });
+    const res = await call("tacchien.api.signals.act_on_signal", { name, action, mute_preset: preset || null });
     showToast(`${name} → ${res.status}`, "success");
     if (S.filters.status && res.status !== S.filters.status) {
       await load();
     } else if (!S.filters.status && (res.status === "Resolved" || res.status === "Muted")) {
-      if (card) card.remove(); // rời khỏi feed Open+Acked mặc định
+      if (card) card.remove();
     } else {
       updateCard(card, res);
     }
   } catch (e) {
     if (actions) actions.style.opacity = "";
     showToast("Lỗi: " + (e.message || e), "error");
-    load(); // revert bằng cách nạp lại sự thật từ server
+    load();
   }
 }
 

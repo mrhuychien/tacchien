@@ -12,9 +12,11 @@ const base = CTX.base || "/assets/tacchien/tc";
 const withV = (p) => p + (p.includes("?") ? "&" : "?") + "v=" + (CTX.assetVersion || "");
 
 const ROUTES = [
-  { pattern: "/", view: "overview", title: "Tổng quan", back: false },
-  { pattern: "/signals", view: "signals", title: "Tín hiệu", back: false },
-  { pattern: "/bophan", view: "bophan", title: "Nhịp bộ phận", back: false },
+  { pattern: "/", view: "baocao", title: "Báo cáo hoạt động", back: false },
+  { pattern: "/giamsat", view: "giamsat", title: "Giám sát an toàn", back: false },
+  { pattern: "/hanhdong", view: "hanhdong", title: "Hành động", back: false },
+  { pattern: "/signals", view: "hanhdong", title: "Hành động", back: false }, // alias cũ
+  { pattern: "/bophan", view: "bophan", title: "Nhịp bộ phận", back: true },
   { pattern: "/domain/:name", view: "domain", title: "Mảng", back: true },
 ];
 
@@ -123,6 +125,15 @@ function init() {
   renderRoute();
 }
 
-// expose để view mới guard link cho tab shell cũ (Luật vàng #2)
-window.APP = { build: BUILD, refresh: refreshCurrent };
+// expose để view mới guard link cho tab shell cũ (Luật vàng #2) + badge Hành động
+window.APP = {
+  build: BUILD,
+  refresh: refreshCurrent,
+  setActionBadge(n) {
+    const b = document.querySelector("[data-nav-badge]");
+    if (!b) return;
+    b.textContent = n > 99 ? "99+" : String(n);
+    b.hidden = !n;
+  },
+};
 init();

@@ -261,6 +261,33 @@
 .tc-pager-btn:disabled { opacity: 0.35; cursor: default; }
 .tc-pager-info { font-size: 0.82rem; font-weight: 600; color: var(--tc-text-2); }
 
+/* ── Nav badge (Hành động) ── */
+.tc-nav-icon-wrap { position: relative; display: inline-flex; }
+.tc-nav-badge {
+  position: absolute; top: -6px; right: -10px; min-width: 16px; height: 16px;
+  padding: 0 4px; border-radius: 8px; background: var(--tc-danger); color: #fff;
+  font-size: 0.6rem; font-weight: 800; line-height: 16px; text-align: center;
+}
+.tc-nav-badge[hidden] { display: none; }
+
+/* ── Giám sát: indicator + dot trạng thái ── */
+.tc-ind-list { display: flex; flex-direction: column; }
+.tc-ind-row {
+  display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0;
+  border-bottom: 1px solid var(--tc-border); color: var(--tc-text);
+}
+.tc-ind-row:last-child { border-bottom: 0; }
+.tc-ind-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.tc-ind-title { font-weight: 600; font-size: 0.9rem; }
+.tc-ind-meta { font-size: 0.72rem; color: var(--tc-text-2); }
+.tc-ind-ok { color: var(--tc-success); font-weight: 800; }
+.tc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--tc-text-3); }
+.tc-dot-green { background: var(--tc-success); }
+.tc-dot-amber { background: var(--tc-warning); }
+.tc-dot-red { background: var(--tc-danger); }
+.tc-dot-blue { background: var(--tc-info); }
+.tc-dot-off { background: var(--tc-text-3); }
+
 /* ── Bộ phận (flow pills) ── */
 .tc-flow-green { background: rgba(16, 185, 129, 0.15); color: #047857; }
 .tc-flow-amber { background: rgba(245, 158, 11, 0.16); color: #b45309; }
