@@ -8,6 +8,7 @@
  "field_order": [
   "title",
   "cluster",
+  "pillar",
   "sort_order",
   "is_active"
  ],
@@ -27,6 +28,15 @@
    "in_standard_filter": 1,
    "label": "Cụm",
    "options": "Dau vao & nha may\nDau ra & thi truong\nNen tang"
+  },
+  {
+   "default": "giam_sat",
+   "description": "Trụ mặc định: bao_cao (nghiệp vụ) / giam_sat (an toàn).",
+   "fieldname": "pillar",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Trụ",
+   "options": "bao_cao\ngiam_sat"
   },
   {
    "default": "0",

@@ -9,6 +9,7 @@
   "rule_code",
   "title",
   "domain",
+  "pillar",
   "col_break_1",
   "default_severity",
   "enabled",
@@ -44,6 +45,15 @@
    "label": "Mảng",
    "options": "TC Domain",
    "reqd": 1
+  },
+  {
+   "default": "giam_sat",
+   "description": "Trụ: giam_sat (chỉ số an toàn) / bao_cao (nghiệp vụ).",
+   "fieldname": "pillar",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Trụ",
+   "options": "giam_sat\nbao_cao"
   },
   {
    "fieldname": "col_break_1",

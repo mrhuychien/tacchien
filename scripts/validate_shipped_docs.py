@@ -139,6 +139,8 @@ def main() -> int:
                 domain_names.add(rec.get("name"))
                 if not is_ascii(rec.get("cluster", "")):
                     warn(f"[fixture TC Domain] cluster có dấu: {rec.get('name')}")
+                if rec.get("pillar") not in ("bao_cao", "giam_sat"):
+                    err(f"[fixture TC Domain] {rec.get('name')}: pillar không hợp lệ ({rec.get('pillar')})")
         except json.JSONDecodeError as exc:
             err(f"[JSON] tc_domain.json: {exc}")
     else:
@@ -174,6 +176,8 @@ def main() -> int:
             mp = r.get("method_path", "")
             if not mp.startswith("tacchien."):
                 err(f"[fixture TC Rule] {code}: method_path lạ: {mp}")
+            if r.get("pillar") not in ("giam_sat", "bao_cao"):
+                err(f"[fixture TC Rule] {code}: pillar không hợp lệ ({r.get('pillar')})")
             if r.get("enabled"):
                 enabled_a += 1
         if len(rules) != 18:

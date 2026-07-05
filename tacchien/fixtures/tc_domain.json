@@ -1,15 +1,119 @@
 [
- {"doctype": "TC Domain", "name": "Mua hàng · NCC", "title": "Mua hàng · NCC", "cluster": "Dau vao & nha may", "sort_order": 1, "is_active": 1},
- {"doctype": "TC Domain", "name": "Kho · tồn · HSD", "title": "Kho · tồn · HSD", "cluster": "Dau vao & nha may", "sort_order": 2, "is_active": 1},
- {"doctype": "TC Domain", "name": "Sản xuất", "title": "Sản xuất", "cluster": "Dau vao & nha may", "sort_order": 3, "is_active": 1},
- {"doctype": "TC Domain", "name": "Chất lượng · FSMS", "title": "Chất lượng · FSMS", "cluster": "Dau vao & nha may", "sort_order": 4, "is_active": 1},
- {"doctype": "TC Domain", "name": "Tài sản · bảo trì", "title": "Tài sản · bảo trì", "cluster": "Dau vao & nha may", "sort_order": 5, "is_active": 1},
- {"doctype": "TC Domain", "name": "Bán hàng", "title": "Bán hàng", "cluster": "Dau ra & thi truong", "sort_order": 6, "is_active": 1},
- {"doctype": "TC Domain", "name": "Vận chuyển", "title": "Vận chuyển", "cluster": "Dau ra & thi truong", "sort_order": 7, "is_active": 1},
- {"doctype": "TC Domain", "name": "Sau bán · khiếu nại", "title": "Sau bán · khiếu nại", "cluster": "Dau ra & thi truong", "sort_order": 8, "is_active": 1},
- {"doctype": "TC Domain", "name": "Trade · trưng bày", "title": "Trade · trưng bày", "cluster": "Dau ra & thi truong", "sort_order": 9, "is_active": 1},
- {"doctype": "TC Domain", "name": "Tài chính · dòng tiền", "title": "Tài chính · dòng tiền", "cluster": "Nen tang", "sort_order": 10, "is_active": 1},
- {"doctype": "TC Domain", "name": "Nhân sự", "title": "Nhân sự", "cluster": "Nen tang", "sort_order": 11, "is_active": 1},
- {"doctype": "TC Domain", "name": "Pháp lý · tuân thủ", "title": "Pháp lý · tuân thủ", "cluster": "Nen tang", "sort_order": 12, "is_active": 1},
- {"doctype": "TC Domain", "name": "Hệ thống", "title": "Hệ thống", "cluster": "Nen tang", "sort_order": 13, "is_active": 1}
+ {
+  "doctype": "TC Domain",
+  "name": "Mua hàng · NCC",
+  "title": "Mua hàng · NCC",
+  "cluster": "Dau vao & nha may",
+  "sort_order": 1,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Kho · tồn · HSD",
+  "title": "Kho · tồn · HSD",
+  "cluster": "Dau vao & nha may",
+  "sort_order": 2,
+  "is_active": 1,
+  "pillar": "giam_sat"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Sản xuất",
+  "title": "Sản xuất",
+  "cluster": "Dau vao & nha may",
+  "sort_order": 3,
+  "is_active": 1,
+  "pillar": "giam_sat"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Chất lượng · FSMS",
+  "title": "Chất lượng · FSMS",
+  "cluster": "Dau vao & nha may",
+  "sort_order": 4,
+  "is_active": 1,
+  "pillar": "giam_sat"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Tài sản · bảo trì",
+  "title": "Tài sản · bảo trì",
+  "cluster": "Dau vao & nha may",
+  "sort_order": 5,
+  "is_active": 1,
+  "pillar": "giam_sat"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Bán hàng",
+  "title": "Bán hàng",
+  "cluster": "Dau ra & thi truong",
+  "sort_order": 6,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Vận chuyển",
+  "title": "Vận chuyển",
+  "cluster": "Dau ra & thi truong",
+  "sort_order": 7,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Sau bán · khiếu nại",
+  "title": "Sau bán · khiếu nại",
+  "cluster": "Dau ra & thi truong",
+  "sort_order": 8,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Trade · trưng bày",
+  "title": "Trade · trưng bày",
+  "cluster": "Dau ra & thi truong",
+  "sort_order": 9,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Tài chính · dòng tiền",
+  "title": "Tài chính · dòng tiền",
+  "cluster": "Nen tang",
+  "sort_order": 10,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Nhân sự",
+  "title": "Nhân sự",
+  "cluster": "Nen tang",
+  "sort_order": 11,
+  "is_active": 1,
+  "pillar": "bao_cao"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Pháp lý · tuân thủ",
+  "title": "Pháp lý · tuân thủ",
+  "cluster": "Nen tang",
+  "sort_order": 12,
+  "is_active": 1,
+  "pillar": "giam_sat"
+ },
+ {
+  "doctype": "TC Domain",
+  "name": "Hệ thống",
+  "title": "Hệ thống",
+  "cluster": "Nen tang",
+  "sort_order": 13,
+  "is_active": 1,
+  "pillar": "giam_sat"
+ }
 ]

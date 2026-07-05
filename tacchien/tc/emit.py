@@ -21,6 +21,18 @@ def _normalize(title: str | None) -> str:
     return (title or "").strip().lower()
 
 
+def pillar_of_rule(source_rule: str | None) -> str:
+    """Trụ của signal suy từ rule (cache). Mặc định giam_sat (an toàn)."""
+    if not source_rule:
+        return "giam_sat"
+    cache = frappe.cache().hget("tc_rule_pillar", source_rule)
+    if cache:
+        return cache
+    val = frappe.db.get_value("TC Rule", source_rule, "pillar") or "giam_sat"
+    frappe.cache().hset("tc_rule_pillar", source_rule, val)
+    return val
+
+
 def dedup_key(source_rule, domain, ref_doctype, ref_name, title) -> str:
     raw = "|".join(
         [
@@ -45,8 +57,12 @@ def emit_signal(
     user: str | None = None,
     ref_doctype: str | None = None,
     ref_name: str | None = None,
+    pillar: str | None = None,
 ) -> str | None:
-    """Tạo hoặc gộp một tín hiệu. Trả về name của TC Signal (hoặc None nếu bị nuốt)."""
+    """Tạo hoặc gộp một tín hiệu. Trả về name của TC Signal (hoặc None nếu bị nuốt).
+
+    pillar: bỏ trống → suy từ rule (Guardian sau này có thể truyền thẳng).
+    """
     key = dedup_key(source_rule, domain, ref_doctype, ref_name, title)
     now = now_datetime()
 
@@ -81,6 +97,7 @@ def emit_signal(
             "doctype": "TC Signal",
             "signal_type": signal_type,
             "severity": severity,
+            "pillar": pillar or pillar_of_rule(source_rule),
             "domain": domain,
             "title": title,
             "description": description,

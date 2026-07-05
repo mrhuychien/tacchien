@@ -8,6 +8,7 @@
   "sec_classify",
   "signal_type",
   "severity",
+  "pillar",
   "domain",
   "status",
   "col_break_1",
@@ -51,6 +52,16 @@
    "in_standard_filter": 1,
    "label": "Mức",
    "options": "P1\nP2\nP3"
+  },
+  {
+   "default": "giam_sat",
+   "fieldname": "pillar",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Trụ",
+   "options": "giam_sat\nbao_cao",
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "domain",
