@@ -23,7 +23,8 @@ http
         return;
       }
       const type =
-        { ".js": "text/javascript", ".css": "text/css", ".html": "text/html" }[
+        { ".js": "text/javascript", ".css": "text/css", ".html": "text/html",
+          ".webp": "image/webp", ".png": "image/png", ".svg": "image/svg+xml" }[
           path.extname(file)
         ] || "text/plain";
       res.writeHead(200, { "content-type": type });

@@ -50,7 +50,8 @@ const LEGEND = [
 
 function domainBlock(domains) {
   return html`<div class="tc-card tc-mt-3">
-    <div class="tc-card-head"><span class="tc-label">Mảng nghiệp vụ</span></div>
+    <div class="tc-card-head"><span class="tc-label">Mảng nghiệp vụ</span>
+      <a class="tc-link" href="#/luodo">Lưu đồ xưởng</a></div>
     <div class="tc-legend">
       ${LEGEND.map((l) => html`<span class="${l.cls}"><i></i>${l.label}</span>`)}
     </div>

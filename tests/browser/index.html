@@ -98,9 +98,22 @@ const GIAMSAT = {
   ],
   generated_at: "2026-07-04 09:05:00"
 };
+// Lưu đồ xưởng: cố tình trộn đủ 5 trạng thái để test cả "chưa giám sát".
+//  Kho·tồn·HSD P1 (có rule) → công đoạn 01 và 10 đỏ
+//  Sản xuất: 0 signal NHƯNG rules_on = 0 → phải ra "chưa giám sát", KHÔNG xanh
+//  Tài sản·bảo trì: có rule, sạch → xanh · Chất lượng·FSMS P3 · Vận chuyển P2
+const LUODO = { domains: {
+  "Mua hàng · NCC":       { cluster:"Dau vao & nha may", count:0, max_sev:null, rules:1, rules_on:1 },
+  "Kho · tồn · HSD":      { cluster:"Dau vao & nha may", count:2, max_sev:"P1", rules:3, rules_on:3 },
+  "Sản xuất":             { cluster:"Dau vao & nha may", count:0, max_sev:null, rules:0, rules_on:0 },
+  "Chất lượng · FSMS":    { cluster:"Dau vao & nha may", count:1, max_sev:"P3", rules:2, rules_on:2 },
+  "Tài sản · bảo trì":    { cluster:"Dau vao & nha may", count:0, max_sev:null, rules:2, rules_on:2 },
+  "Vận chuyển":           { cluster:"Dau ra & thi truong", count:1, max_sev:"P2", rules:1, rules_on:1 }
+}, generated_at: "2026-07-04 09:05:00" };
 window.fetch = async (url, opts) => {
   let body = { message: {} };
   if (url.includes("get_baocao")) body = { message: BAOCAO };
+  else if (url.includes("get_luodo")) body = { message: LUODO };
   else if (url.includes("get_giamsat")) body = { message: GIAMSAT };
   else if (url.includes("get_overview")) body = { message: OVERVIEW };
   else if (url.includes("get_bophan")) body = { message: BOPHAN };

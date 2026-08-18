@@ -261,6 +261,7 @@
 .tc-cell-clean { --tc-cell-accent: var(--tc-success); --tc-cell-mark: var(--tc-mark-success); background: rgba(67, 207, 120, 0.14); color: var(--tc-on-success); border-color: rgba(67, 207, 120, 0.30); }
 .tc-cell-p1    { --tc-cell-accent: var(--tc-danger);  --tc-cell-mark: var(--tc-mark-danger);  background: rgba(255, 96, 70, 0.14);  color: var(--tc-on-danger);  border-color: rgba(255, 96, 70, 0.38); }
 .tc-cell-p2    { --tc-cell-accent: var(--tc-warning); --tc-cell-mark: var(--tc-mark-warning); background: rgba(255, 200, 63, 0.22); color: var(--tc-on-warning); border-color: rgba(255, 200, 63, 0.45); }
+.tc-cell-unwatched { --tc-cell-accent: #b9c2be; --tc-cell-mark: #8b9793; background: var(--tc-surface-2); color: var(--tc-text-2); border-color: var(--tc-border); }
 .tc-cell-p3    { --tc-cell-accent: var(--tc-info);    --tc-cell-mark: var(--tc-mark-info);    background: rgba(50, 191, 229, 0.14); color: var(--tc-on-info);    border-color: rgba(50, 191, 229, 0.32); }
 /* P1 nhấp nháy vòng — port .stage-hotspot.active::before của hgboard */
 .tc-health-cell.tc-cell-p1::after {
@@ -546,3 +547,227 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ══ Lưu đồ xưởng (#/luodo) ═══════════════════════════════════════════════════
+   Port nguyên hình học + chuyển động từ app/globals.css của hgboard (.flow-*).
+   Khác 2 chỗ, đều có lý do:
+   - Hotspot dùng nền màu SÁNG + chữ/viền ink. Bản gốc là nền tối + viền trắng,
+     nhưng trắng trên ảnh nền be chỉ 1.57:1; ink đạt 8.47:1.
+   - Màu hotspot mang NGỮ NGHĨA (severity của mảng đang gác công đoạn), không
+     còn là trang trí.
+   ⚠️ Ảnh nền tham chiếu KHÔNG mang ?v= (url() trong CSS bỏ query). Frappe serve
+   /assets với cache 1 năm → thay ảnh thì phải ĐỔI TÊN FILE, đừng ghi đè. */
+
+.tc-lo-card { padding: 1rem; }
+.tc-lo-legend { align-items: center; }
+.tc-lo-play { margin-left: auto; font-size: 0.78rem; padding: 6px 12px; }
+
+.tc-lo-viewport {
+  border: 1px solid var(--tc-border); border-radius: var(--tc-radius-lg);
+  box-shadow: var(--tc-shadow-lg); overflow: auto; -webkit-overflow-scrolling: touch;
+}
+.tc-lo-canvas {
+  aspect-ratio: 1680 / 941; min-width: 980px; position: relative; overflow: hidden;
+  background: url('flow-map/production-flow.webp') center / cover no-repeat;
+}
+.tc-lo-shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.04) 62%, rgba(15,46,40,.18));
+}
+.tc-lo-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+
+/* ── Dòng nguyên liệu ── */
+.tc-lo-line { fill: none; filter: url(#tc-lo-glow); stroke-linecap: round; stroke-linejoin: round; stroke-width: 9; }
+.tc-lo-line-bean   { stroke: #ff6046; opacity: .58; }
+.tc-lo-line-sugar  { stroke: #ffc83f; opacity: .62; }
+.tc-lo-line-oil    { stroke: #43cf78; opacity: .62; }
+.tc-lo-line-cake   { stroke: #ff4fb3; opacity: .58; }
+.tc-lo-line-powder { stroke: #32bfe5; opacity: .65; }
+.tc-lo-dashes {
+  fill: none; opacity: .92; stroke-dasharray: .012 .02; stroke-linecap: round; stroke-width: 3;
+  animation: tcLoRouteFlow 20s linear infinite;
+}
+.tc-lo-dashes-bean   { stroke: #ffd0c8; }
+.tc-lo-dashes-sugar  { stroke: #fff2b6; animation-duration: 16s; }
+.tc-lo-dashes-oil    { stroke: #c8ffda; animation-duration: 12s; }
+.tc-lo-dashes-cake   { stroke: #ffd2eb; animation-duration: 22s; }
+.tc-lo-dashes-powder { stroke: #d3f6ff; animation-duration: 14s; }
+.tc-lo-particle { filter: url(#tc-lo-glow); }
+.tc-lo-trolley rect { fill: #f8faf5; stroke: var(--tc-ink); stroke-width: 2; }
+.tc-lo-trolley circle { fill: var(--tc-ink); }
+
+/* ── Cụm máy đang chạy ── */
+.tc-lo-machines { color: #e9ff9c; filter: url(#tc-lo-glow); }
+.tc-lo-machines path, .tc-lo-machines circle, .tc-lo-machines ellipse, .tc-lo-machines rect { vector-effect: non-scaling-stroke; }
+.tc-lo-loader path { opacity: .25; stroke: currentColor; stroke-dasharray: 6 10; stroke-width: 2; }
+.tc-lo-loader-dot { fill: var(--tc-lime); opacity: .75; animation: tcLoLoaderMove 8s linear infinite; }
+.tc-lo-loader-dot-b { animation-delay: -4s; }
+.tc-lo-boiler { color: #f4fff8; }
+.tc-lo-heat { fill: none; opacity: .3; stroke: #ffb069; stroke-width: 3; animation: tcLoHeatPulse 4.8s ease-in-out infinite; }
+.tc-lo-steam { fill: none; opacity: .5; stroke: currentColor; stroke-linecap: round; stroke-width: 5; animation: tcLoSteamRise 6s ease-in-out infinite; }
+.tc-lo-steam-b { animation-delay: -2s; }
+.tc-lo-steam-c { animation-delay: -4s; }
+.tc-lo-ring {
+  fill: none; opacity: .46; stroke: #ffe07a; stroke-dasharray: 13 10; stroke-width: 4;
+  transform-box: fill-box; transform-origin: center; animation: tcLoSpin 8s linear infinite;
+}
+.tc-lo-ring-b { animation-direction: reverse; animation-duration: 9s; }
+.tc-lo-ring-c { animation-duration: 10s; }
+.tc-lo-pulse {
+  fill: rgba(155,232,255,.04); opacity: .38; stroke: #9be8ff; stroke-width: 3;
+  transform-box: fill-box; transform-origin: center; animation: tcLoCooling 6s ease-in-out infinite;
+}
+.tc-lo-pulse-b { animation-delay: -2s; }
+.tc-lo-pulse-c { animation-delay: -4s; }
+.tc-lo-breaker { color: #fff0a8; opacity: .48; transform-box: fill-box; transform-origin: center; animation: tcLoBreaker 3.2s ease-in-out infinite; }
+.tc-lo-breaker rect, .tc-lo-breaker path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 3; }
+.tc-lo-grinder-ring {
+  fill: none; opacity: .5; stroke: #9be8ff; stroke-dasharray: 8 8; stroke-width: 4;
+  transform-box: fill-box; transform-origin: center; animation: tcLoSpin 7s linear infinite;
+}
+.tc-lo-grinder-core { fill: #9be8ff; opacity: .35; animation: tcLoCorePulse 3.5s ease-in-out infinite; }
+.tc-lo-mixer-ring {
+  fill: none; opacity: .48; stroke: #ffe07a; stroke-dasharray: 18 11; stroke-width: 4;
+  transform-box: fill-box; transform-origin: center; animation: tcLoMixer 7s linear infinite;
+}
+.tc-lo-mixer-blade {
+  fill: none; opacity: .36; stroke: #fff0a8; stroke-linecap: round; stroke-width: 4;
+  transform-box: fill-box; transform-origin: center; animation: tcLoSpin 7s linear infinite;
+}
+.tc-lo-rollers { color: #ffdc74; opacity: .46; }
+.tc-lo-rollers > path { fill: none; stroke: currentColor; stroke-width: 3; }
+.tc-lo-roller {
+  fill: none; stroke: currentColor; stroke-dasharray: 8 7; stroke-width: 4;
+  transform-box: fill-box; transform-origin: center; animation: tcLoSpin 5.5s linear infinite;
+}
+.tc-lo-roller-b { animation-direction: reverse; }
+.tc-lo-conveyor {
+  fill: none; opacity: .34; stroke: #fff0a8; stroke-dasharray: 10 13; stroke-linecap: round; stroke-width: 4;
+  animation: tcLoConveyor 18s linear infinite;
+}
+.tc-lo-pack, .tc-lo-box { fill: #fff0a8; opacity: .62; }
+.tc-lo-pack { animation: tcLoPackMove 18s linear infinite; }
+.tc-lo-pack-b { animation-delay: -6s; }
+.tc-lo-pack-c { animation-delay: -12s; }
+.tc-lo-box { animation: tcLoBoxMove 20s linear infinite; }
+.tc-lo-box-b { animation-delay: -10s; }
+.tc-lo-canvas.tc-lo-paused .tc-lo-overlay * { animation-play-state: paused !important; }
+
+/* ── Hotspot: màu = severity của mảng đang gác công đoạn ── */
+.tc-lo-hotspot {
+  position: absolute; z-index: 4; width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--tc-ink);           /* ink chứ không trắng: 8.47:1 trên ảnh be */
+  box-shadow: 0 5px 16px rgba(14,47,40,.28); cursor: pointer;
+  transform: translate(-50%, -50%) scale(.78);
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.tc-lo-hotspot span { color: var(--tc-ink); font: 700 9px/1 var(--tc-font-display); }
+.tc-lo-hotspot:hover, .tc-lo-hotspot.tc-active { transform: translate(-50%, -50%) scale(1.05); }
+.tc-lo-h-p1        { background: var(--tc-danger-bright); }
+.tc-lo-h-p2        { background: var(--tc-warning); }
+.tc-lo-h-p3        { background: var(--tc-info); }
+.tc-lo-h-clean     { background: var(--tc-success); }
+.tc-lo-h-unwatched { background: #c9d0cd; }
+/* Công đoạn nguy: vòng lan toả, kể cả khi không phải công đoạn đang chọn. */
+.tc-lo-hotspot.tc-lo-h-p1::before,
+.tc-lo-hotspot.tc-lo-h-p1::after {
+  content: ""; position: absolute; inset: -7px; border-radius: 50%;
+  border: 1.5px solid var(--tc-danger); pointer-events: none;
+  animation: tcLoRing 1.7s ease-out infinite;
+}
+.tc-lo-hotspot.tc-lo-h-p1::after { inset: -16px; animation-delay: .5s; }
+
+/* ── Thẻ công đoạn đang xem ── */
+.tc-lo-stage { position: relative; }
+.tc-lo-active {
+  /* Mobile-first: thẻ là khối tĩnh NGAY DƯỚI bản đồ. Desktop mới đè lên (dưới). */
+  margin-top: 12px; z-index: 5;
+  display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center;
+  padding: 14px 16px; border-radius: var(--tc-radius-md); color: #fff;
+  background: rgba(12,51,44,.93); border: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
+.tc-lo-active-no {
+  width: 46px; height: 46px; flex-shrink: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,.34); color: var(--tc-lime);
+  font: 600 15px/1 var(--tc-font-display);
+}
+.tc-lo-active-main { min-width: 0; }
+.tc-lo-active small { display: block; font-size: 0.58rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.72); }
+.tc-lo-active strong { display: block; margin-top: 5px; font: 600 clamp(1.05rem, .8rem + 1vw, 1.6rem)/1 var(--tc-font-display); letter-spacing: -.04em; }
+.tc-lo-active p { margin: 5px 0 0; font-size: 0.76rem; line-height: 1.45; color: rgba(255,255,255,.78); }
+.tc-lo-active > b {
+  flex-shrink: 0; white-space: nowrap; padding: 9px 13px; border-radius: var(--tc-radius-pill);
+  background: var(--tc-lime); color: var(--tc-ink); font-size: 0.74rem; font-weight: 700;
+}
+/* Viền trái đổi màu theo trạng thái — nhắc lại tín hiệu ở nơi mắt đang nhìn. */
+.tc-lo-active.tc-lo-h-p1 { border-left: 4px solid var(--tc-danger); }
+.tc-lo-active.tc-lo-h-p2 { border-left: 4px solid var(--tc-warning); }
+.tc-lo-active.tc-lo-h-p3 { border-left: 4px solid var(--tc-info); }
+.tc-lo-active.tc-lo-h-clean { border-left: 4px solid var(--tc-success); }
+.tc-lo-active.tc-lo-h-unwatched { border-left: 4px solid #b9c2be; }
+.tc-lo-domains { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.tc-lo-dom {
+  font-size: 0.68rem; font-weight: 600; padding: 4px 9px; border-radius: var(--tc-radius-pill);
+  background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.22);
+}
+.tc-lo-dom-missing { color: rgba(255,255,255,.72); background: transparent; border-style: dashed; }
+
+/* ── Thanh chọn công đoạn ── */
+.tc-lo-nav {
+  position: relative; display: grid; grid-template-columns: repeat(10, 1fr);
+  gap: 3px; margin-top: 14px; padding-top: 7px;
+}
+.tc-lo-nav-progress { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: rgba(21,53,47,.2); }
+.tc-lo-nav-progress i { display: block; height: 100%; background: var(--tc-primary); transition: width .45s cubic-bezier(.2,.7,.2,1); }
+.tc-lo-nav-btn {
+  display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 9px 7px;
+  border: 0; border-radius: var(--tc-radius-sm); background: transparent; cursor: pointer;
+  text-align: left; font-family: inherit; color: var(--tc-text-2);
+  transition: background .25s ease, color .25s ease;
+}
+.tc-lo-nav-btn:hover { background: var(--tc-surface-2); color: var(--tc-text); }
+.tc-lo-nav-btn.tc-active { background: var(--tc-surface-2); color: var(--tc-text); }
+.tc-lo-nav-no { color: var(--tc-primary-deep); font: 700 0.64rem/1 var(--tc-font-display); }
+.tc-lo-nav-btn strong { font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tc-lo-nav-btn .tc-dot { width: 8px; height: 8px; }
+.tc-lo-dot-p1        { background: var(--tc-mark-danger);  box-shadow: 0 0 0 1px rgba(21,53,47,.56), 0 0 8px rgba(255,96,70,.7); }
+.tc-lo-dot-p2        { background: var(--tc-mark-warning); box-shadow: 0 0 0 1px rgba(21,53,47,.56), 0 0 8px rgba(255,200,63,.7); }
+.tc-lo-dot-p3        { background: var(--tc-mark-info);    box-shadow: 0 0 0 1px rgba(21,53,47,.56), 0 0 8px rgba(50,191,229,.7); }
+.tc-lo-dot-clean     { background: var(--tc-mark-success); box-shadow: 0 0 0 1px rgba(21,53,47,.56); }
+.tc-lo-dot-unwatched { background: #8b9793; box-shadow: 0 0 0 1px rgba(21,53,47,.56); }
+
+@keyframes tcLoRouteFlow { to { stroke-dashoffset: -1; } }
+@keyframes tcLoLoaderMove { from { transform: translateX(0); } to { transform: translateX(110px); } }
+@keyframes tcLoSteamRise { 0%, 100% { opacity: 0; transform: translateY(12px); } 32% { opacity: .56; } 78% { opacity: .12; transform: translateY(-18px); } }
+@keyframes tcLoHeatPulse { 50% { opacity: .58; transform: scale(1.08); } }
+@keyframes tcLoSpin { to { transform: rotate(360deg); } }
+@keyframes tcLoMixer { to { stroke-dashoffset: -120; transform: rotate(360deg); } }
+@keyframes tcLoCooling { 50% { opacity: .66; transform: scale(1.16); } }
+@keyframes tcLoBreaker { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@keyframes tcLoCorePulse { 50% { opacity: .7; transform: scale(1.35); } }
+@keyframes tcLoConveyor { to { stroke-dashoffset: -230; } }
+@keyframes tcLoPackMove { from { transform: translateX(0); } to { transform: translateX(760px); } }
+@keyframes tcLoBoxMove { from { transform: translateX(0); } to { transform: translateX(725px); } }
+@keyframes tcLoRing { to { opacity: 0; transform: scale(1.7); } }
+
+.tc-lo-active > b { grid-column: 2; justify-self: start; }
+@media (min-width: 901px) {
+  .tc-lo-active {
+    position: absolute; left: 26px; bottom: 22px; max-width: 560px; margin-top: 0;
+    grid-template-columns: auto 1fr auto; gap: 14px;
+  }
+  .tc-lo-active > b { grid-column: auto; justify-self: auto; }
+}
+@media (max-width: 900px) {
+  .tc-lo-viewport { border-radius: var(--tc-radius-md); }
+  .tc-lo-nav { display: flex; overflow-x: auto; padding-bottom: 5px; }
+  .tc-lo-nav-btn { flex: 0 0 108px; }
+}
+
+/* TV mode: lưu đồ là màn treo tường — cho nó chiếm hết chiều rộng. */
+.tc-app.tc-tv .tc-lo-nav-btn strong { font-size: 0.82rem; }
+.tc-app.tc-tv .tc-lo-hotspot { width: 38px; height: 38px; }
+.tc-app.tc-tv .tc-lo-hotspot span { font-size: 11px; }

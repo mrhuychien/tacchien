@@ -78,6 +78,26 @@ send_digest()          # rỗng → "✅ Không có tín hiệu mở"
 frappe.db.delete("TC Signal", {"source_rule": ["like", "RULE-TEST%"]}); frappe.db.commit()
 ```
 
+**e) Lưu đồ xưởng `#/luodo`** — màn mới, có asset và API riêng nên phải soi thật:
+```bash
+# ảnh nền phải ra 200 + đúng content-type (Frappe serve từ /assets)
+curl -sI https://dev.rvhg/assets/tacchien/tc/flow-map/production-flow.webp | head -3
+```
+```python
+frappe.call("tacchien.api.luodo.get_luodo")["domains"]["Sản xuất"]   # -> rules_on
+```
+Trên `/tc#/luodo` kiểm 3 điều:
+1. Công đoạn nào có signal P1 phải **đỏ và nhấp nháy**; bấm vào ra đúng danh sách
+   mảng đang gác, bấm tiếp phải sang `#/domain/<mảng>`.
+2. Mảng **chưa có rule nào bật** thì công đoạn phụ thuộc nó phải là **xám
+   "chưa giám sát"**, KHÔNG được xanh. Hiện `Sản xuất` chưa có rule → công đoạn
+   02/03/05/06 phải xám. Khi nào thêm rule cho Sản xuất thì chúng mới chuyển màu.
+3. Trên điện thoại: bản đồ cuộn ngang được và **tự kéo hotspot đang chọn vào giữa**;
+   thẻ công đoạn nằm dưới bản đồ, không bị cắt.
+
+> Bảng neo công đoạn → mảng nằm ở đầu `public/tc/views/luodo.js` (hằng `STAGES`).
+> Đổi cách quy trách nhiệm cho công đoạn thì sửa đúng chỗ đó, không rải nơi khác.
+
 ## 4. Chạy unit test
 
 ```bash

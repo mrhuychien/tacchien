@@ -101,8 +101,8 @@ def act_on_signal(name, action, mute_preset=None, muted_until=None):
         frappe.throw(_("Hành động không hợp lệ: {0}").format(action))
 
     doc.save(ignore_permissions=True)
-    # Cập nhật ngay các bảng đọc-cache của 3 trụ.
-    for key in ("tc_overview", "tc_baocao", "tc_giamsat"):
+    # Cập nhật ngay các bảng đọc-cache của 3 trụ + lưu đồ xưởng.
+    for key in ("tc_overview", "tc_baocao", "tc_giamsat", "tc_luodo"):
         frappe.cache().delete_value(key)
     return {
         "name": doc.name,

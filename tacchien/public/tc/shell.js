@@ -17,6 +17,7 @@ const ROUTES = [
   { pattern: "/hanhdong", view: "hanhdong", title: "Hành động", back: false },
   { pattern: "/signals", view: "hanhdong", title: "Hành động", back: false }, // alias cũ
   { pattern: "/bophan", view: "bophan", title: "Nhịp bộ phận", back: true },
+  { pattern: "/luodo", view: "luodo", title: "Lưu đồ xưởng", back: true },
   { pattern: "/domain/:name", view: "domain", title: "Mảng", back: true },
 ];
 
@@ -101,6 +102,13 @@ async function renderRoute() {
   setHTML(el("tc-bottom-nav"), navHTML(path));
   el("tc-header").style.display = tv ? "none" : "";
   el("tc-bottom-nav").style.display = tv ? "none" : "";
+
+  // View cũ tự dọn (timer/chart) trước khi DOM bị thay — không có bước này thì
+  // setInterval của view trước vẫn chạy nền sau khi đã rời màn.
+  if (currentView && typeof currentView.destroy === "function") {
+    try { currentView.destroy(); } catch (e) { console.warn("[tc] destroy", e); }
+  }
+  currentView = null;
 
   const view = el("tc-view");
   setHTML(view, html`<div class="tc-skeleton" style="height:200px"></div>`);

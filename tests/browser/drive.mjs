@@ -139,6 +139,50 @@ const overlay = await page.evaluate(() => {
 check("vòng nhấp nháy KHÔNG rò ra pill rollup (" + overlay.pillAfter + ")", overlay.pillAfter === "none");
 check("rail = 2/3 ở trụ Giám sát (" + overlay.railWidth + "%)", overlay.railWidth === 67);
 
+// ── Lưu đồ xưởng (#/luodo) ──
+await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.waitForTimeout(1600);
+const lo = await page.evaluate(() => {
+  const hs = [...document.querySelectorAll(".tc-lo-hotspot")];
+  const cls = (i) => (hs[i] ? [...hs[i].classList].find((c) => c.startsWith("tc-lo-h-")) : null);
+  const canvas = document.querySelector(".tc-lo-canvas");
+  return {
+    hotspots: hs.length,
+    legend: document.querySelectorAll(".tc-lo-legend span i").length,
+    badge: document.querySelector(".tc-view-banner-badge")?.textContent.trim(),
+    // mock: Kho·tồn·HSD P1 → công đoạn 01 và 10
+    s01: cls(0), s10: cls(9),
+    // mock: Sản xuất rules_on=0 → 02/03/05/06 PHẢI là unwatched, KHÔNG được clean
+    s02: cls(1), s03: cls(2), s06: cls(5),
+    // mock: Chất lượng·FSMS P3 → 04/07/08/09
+    s04: cls(3),
+    bg: getComputedStyle(canvas).backgroundImage,
+    domChips: document.querySelectorAll("[data-lo-active] .tc-lo-dom").length,
+    navBtns: document.querySelectorAll(".tc-lo-nav-btn").length,
+  };
+});
+check("lưu đồ: 10 hotspot", lo.hotspots === 10);
+check("lưu đồ: legend 5 trạng thái", lo.legend === 5);
+check("lưu đồ: ảnh nền nạp được (webp)", /production-flow\.webp/.test(lo.bg));
+check("lưu đồ: 10 nút chọn công đoạn", lo.navBtns === 10);
+check("lưu đồ: badge = 2 công đoạn nguy (" + lo.badge + ")", /2 công đoạn nguy/.test(lo.badge || ""));
+check("lưu đồ: công đoạn 01 & 10 đỏ theo signal P1 của Kho", lo.s01 === "tc-lo-h-p1" && lo.s10 === "tc-lo-h-p1");
+check("lưu đồ: công đoạn 04 xanh biển theo P3 của Chất lượng", lo.s04 === "tc-lo-h-p3");
+// Guard chống "xanh giả": mảng Sản xuất không có rule nào bật thì công đoạn
+// phụ thuộc nó KHÔNG được tô xanh, dù 0 signal.
+check("lưu đồ: công đoạn chưa có rule ra 'chưa giám sát', KHÔNG xanh giả",
+  lo.s02 === "tc-lo-h-unwatched" && lo.s03 === "tc-lo-h-unwatched" && lo.s06 === "tc-lo-h-unwatched");
+check("lưu đồ: thẻ công đoạn liệt kê mảng đang gác", lo.domChips === 2);
+
+await page.click('.tc-lo-nav-btn[data-lo-stage="3"]');
+await page.waitForTimeout(400);
+const loPick = await page.evaluate(() => ({
+  title: document.querySelector("[data-lo-active] strong")?.textContent.trim(),
+  paused: document.querySelector(".tc-lo-canvas")?.classList.contains("tc-lo-paused"),
+}));
+check("lưu đồ: bấm công đoạn 04 đổi thẻ (" + loPick.title + ")", /Ủ nguội/.test(loPick.title || ""));
+check("lưu đồ: chọn thủ công thì dừng tự chạy", loPick.paused === true);
+
 // Lớp nền: KHÔNG được là pseudo-element fixed (nó nằm ở stacking context gốc và
 // phủ luôn navbar/footer của templates/web.html — đã đo bằng pixel).
 const bgLayer = await page.evaluate(() => {
