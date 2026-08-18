@@ -64,31 +64,51 @@ let S = {};
 // ── Trạng thái công đoạn ─────────────────────────────────────────────────────
 // "chưa giám sát" ≠ "sạch": mảng không có rule nào BẬT thì không được tô xanh.
 function stageState(stage, domains) {
-  let maxSev = null, count = 0, watched = 0;
+  let maxSev = null, count = 0, watched = 0, failing = 0;
   const parts = [];
   for (const name of stage.domains) {
     const d = domains[name];
     if (!d) { parts.push({ name, missing: true }); continue; }
-    if (d.rules_on > 0) watched += 1;
+    // "đang canh" = có rule CHẠY ĐƯỢC (bật và không lỗi), không phải chỉ "bật".
+    const ok = d.rules_ok !== undefined ? d.rules_ok : (d.rules_on || 0);
+    if (ok > 0) watched += 1;
+    failing += d.rules_failing || 0;
     count += d.count || 0;
     if (SEV_RANK[d.max_sev] > (SEV_RANK[maxSev] || 0)) maxSev = d.max_sev;
-    parts.push({ name, count: d.count || 0, max_sev: d.max_sev, rules_on: d.rules_on || 0 });
+    parts.push({
+      name, count: d.count || 0, acked: d.acked || 0, max_sev: d.max_sev,
+      rules_ok: ok, rules_failing: d.rules_failing || 0,
+    });
+  }
+  // Phòng thủ: có tín hiệu mà không đọc được mức thì KHÔNG được nói "sạch".
+  if (count > 0 && !maxSev) {
+    console.error("[tc] lưu đồ: công đoạn", stage.number, "có", count, "tín hiệu nhưng max_sev rỗng");
+    maxSev = "P3";
   }
   // Chỉ tô XANH khi MỌI mảng gác công đoạn đều có rule đang bật và đều sạch.
   // Chỉ cần một mảng chưa có rule là công đoạn đó chưa thực sự được canh —
   // xanh lúc đó là nói dối, đúng loại lỗi mà đèn "đang giám sát" từng mắc.
   const allWatched = watched === stage.domains.length;
   const state = maxSev ? maxSev.toLowerCase() : (allWatched ? "clean" : "unwatched");
-  return { state, maxSev, count, watched, allWatched, parts };
+  return { state, maxSev, count, watched, allWatched, failing, parts };
 }
 
 const STATE_LABEL = { p1: "Nguy", p2: "Cảnh báo", p3: "Theo dõi", clean: "Sạch", unwatched: "Chưa giám sát" };
 
 export async function render({ container, tv }) {
   const d = await call("tacchien.api.luodo.get_luodo");
+  const domains = d.domains || {};
+  const unknown = [...new Set(STAGES.flatMap((x) => x.domains))].filter((n) => !domains[n]);
+  if (unknown.length) {
+    // Gõ sai tên mảng trông y hệt "mảng thật chưa có rule" → phải kêu to.
+    // Validator tĩnh (scripts/validate_shipped_docs.py) chặn ở khâu ship; đây là
+    // lưới thứ hai cho trường hợp seed trên server đổi mà view chưa deploy lại.
+    console.error("[tc] lưu đồ: STAGES neo vào mảng không có trong dữ liệu:", unknown);
+  }
   S = {
     container,
-    domains: d.domains || {},
+    domains,
+    unknown,
     active: 0,
     playing: !REDUCE.matches,  // chuyển động nền của bản đồ
     auto: true,                // băng chuyền tự đổi công đoạn (khái niệm RIÊNG)
@@ -164,11 +184,14 @@ function summary() {
 
 // Nhãn phải nói đúng điều đang thấy: "sạch" chỉ khi CẢ 10 công đoạn đều được canh.
 function summaryBadge(c) {
-  if (c.p1) return `${c.p1} công đoạn nguy`;
-  if (c.p2) return `${c.p2} công đoạn cảnh báo`;
+  // Điểm mù phải LUÔN hiện, kể cả khi đã có sự cố: "1 công đoạn cảnh báo" trong
+  // khi 8/10 công đoạn không ai canh là câu nói đúng mà gây hiểu sai.
+  const blind = c.unwatched ? ` · ${c.unwatched}/${STAGES.length} chưa canh` : "";
+  if (c.p1) return `${c.p1} công đoạn nguy${blind}`;
+  if (c.p2) return `${c.p2} công đoạn cảnh báo${blind}`;
+  if (c.p3) return `${c.p3} công đoạn theo dõi${blind}`;
   if (c.unwatched === STAGES.length) return "Chưa công đoạn nào được canh";
   if (c.unwatched) return `${c.unwatched}/${STAGES.length} công đoạn chưa canh`;
-  if (c.p3) return `${c.p3} công đoạn cần theo dõi`;
   return "Dây chuyền sạch";
 }
 
@@ -213,8 +236,10 @@ function paint() {
           <div class="tc-lo-nav-progress" aria-hidden="true"><i style="width:${((S.active + 1) / STAGES.length) * 100}%"></i></div>
           ${STAGES.map((s, i) => {
             const st = stageState(s, S.domains);
+            // Nội suy GIÁ TRỊ chứ không nội suy cả attribute: html`` escape dấu
+            // nháy nên `aria-current="true"` render ra aria-current="&quot;true&quot;".
             return html`<button class="tc-lo-nav-btn ${i === S.active ? "tc-active" : ""}" data-lo-stage="${i}"
-              ${i === S.active ? 'aria-current="true"' : ""}>
+              aria-current="${i === S.active ? "true" : "false"}">
               <span class="tc-lo-nav-no">${s.number}</span>
               <strong>${s.name}</strong>
               <em class="tc-dot tc-lo-dot-${st.state}" title="${STATE_LABEL[st.state]}"></em>
@@ -234,19 +259,27 @@ function hotspot(stage, i) {
   </button>`;
 }
 
+// Nhãn chip mảng: phân biệt rule lỗi / chưa có rule / sạch / đang có tín hiệu.
+function domLabel(p) {
+  if (p.rules_failing && !p.rules_ok) return " · rule đang lỗi";
+  if (!p.rules_ok) return " · chưa có rule";
+  if (!p.count) return " · sạch";
+  return p.acked ? ` · ${p.count} (${p.acked} đã ack)` : ` · ${p.count}`;
+}
+
 function activeCard() {
   const s = STAGES[S.active];
   const st = stageState(s, S.domains);
   return html`<div class="tc-lo-active tc-lo-h-${st.state}" data-lo-active>
     <span class="tc-lo-active-no">${s.number}</span>
     <div class="tc-lo-active-main">
-      <small>${STATE_LABEL[st.state]}${st.count ? ` · ${st.count} tín hiệu mở` : ""}</small>
+      <small>${STATE_LABEL[st.state]}${st.count ? ` · ${st.count} tín hiệu chưa xong` : ""}${st.failing ? ` · ${st.failing} rule lỗi` : ""}</small>
       <strong>${s.name}</strong>
       <p>${s.detail}</p>
       <div class="tc-lo-domains">
         ${st.parts.map((p) =>
           p.missing
-            ? html`<span class="tc-lo-dom tc-lo-dom-missing">${p.name}: chưa khai mảng</span>`
+            ? html`<span class="tc-lo-dom tc-lo-dom-missing" title="Tên mảng trong STAGES không khớp dữ liệu — lỗi cấu hình, không phải trạng thái vận hành">${p.name} · chưa khai mảng</span>`
             : html`<a class="tc-lo-dom ${p.rules_on ? "" : "tc-lo-dom-missing"}"
                 href="#/domain/${encodeURIComponent(p.name)}">
                 ${p.name}${p.rules_on ? (p.count ? ` · ${p.count}` : " · sạch") : " · chưa có rule"}

@@ -22,7 +22,7 @@ export function navHTML(activePath) {
     <div class="tc-nav-progress" aria-hidden="true"><i style="width:${progress}%"></i></div>
     ${ITEMS.map(
       (it, i) => html`
-      <a href="#${it.path}" class="tc-nav-item ${i === idx ? "tc-active" : ""}" ${i === idx ? 'aria-current="page"' : ""}>
+      <a href="#${it.path}" class="tc-nav-item ${i === idx ? "tc-active" : ""}" aria-current="${i === idx ? "page" : "false"}">
         <span class="tc-nav-icon-wrap"><i class="fas ${it.icon}"></i>${it.badge ? html`<span class="tc-nav-badge" data-nav-badge hidden></span>` : ""}</span>
         <span>${it.label}</span>
       </a>`

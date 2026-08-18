@@ -165,7 +165,8 @@ check("lưu đồ: 10 hotspot", lo.hotspots === 10);
 check("lưu đồ: legend 5 trạng thái", lo.legend === 5);
 check("lưu đồ: ảnh nền nạp được (webp)", /production-flow\.webp/.test(lo.bg));
 check("lưu đồ: 10 nút chọn công đoạn", lo.navBtns === 10);
-check("lưu đồ: badge = 2 công đoạn nguy (" + lo.badge + ")", /2 công đoạn nguy/.test(lo.badge || ""));
+check("lưu đồ: badge = 2 công đoạn nguy + nêu điểm mù (" + lo.badge + ")",
+  /2 công đoạn nguy/.test(lo.badge || "") && /chưa canh/.test(lo.badge || ""));
 check("lưu đồ: công đoạn 01 & 10 đỏ theo signal P1 của Kho", lo.s01 === "tc-lo-h-p1" && lo.s10 === "tc-lo-h-p1");
 check("lưu đồ: công đoạn 04 xanh biển theo P3 của Chất lượng", lo.s04 === "tc-lo-h-p3");
 // Guard chống "xanh giả": mảng Sản xuất không có rule nào bật thì công đoạn
@@ -173,6 +174,49 @@ check("lưu đồ: công đoạn 04 xanh biển theo P3 của Chất lượng", 
 check("lưu đồ: công đoạn chưa có rule ra 'chưa giám sát', KHÔNG xanh giả",
   lo.s02 === "tc-lo-h-unwatched" && lo.s03 === "tc-lo-h-unwatched" && lo.s06 === "tc-lo-h-unwatched");
 check("lưu đồ: thẻ công đoạn liệt kê mảng đang gác", lo.domChips === 2);
+
+// aria-current phải là token hợp lệ. html`` escape dấu nháy nên nội suy CẢ cụm
+// attribute (`aria-current="true"`) sẽ render thành aria-current='"true"'.
+const ariaVals = await page.evaluate(() => ({
+  luodo: document.querySelector(".tc-lo-nav-btn.tc-active")?.getAttribute("aria-current"),
+  nav: null,
+}));
+check("lưu đồ: aria-current là token hợp lệ (" + ariaVals.luodo + ")", ariaVals.luodo === "true");
+
+// Rule BẬT nhưng đang lỗi thì không phải "đang canh": công đoạn phải là
+// "chưa giám sát", tuyệt đối không xanh. Ép payload rồi đi qua update().
+const loFail = await page.evaluate(async () => {
+  const orig = window.fetch;
+  window.fetch = async (u, o) => {
+    if (String(u).includes("get_luodo")) {
+      return { ok: true, status: 200, json: async () => ({ message: { domains: {
+        "Sản xuất":          { count:0, open:0, acked:0, max_sev:null, rules:2, rules_on:2, rules_failing:0, rules_ok:2 },
+        "Tài sản · bảo trì": { count:0, open:0, acked:0, max_sev:null, rules:1, rules_on:1, rules_failing:1, rules_ok:0 },
+        "Kho · tồn · HSD":   { count:0, open:0, acked:0, max_sev:null, rules:1, rules_on:1, rules_failing:0, rules_ok:1 },
+        "Mua hàng · NCC":    { count:0, open:0, acked:0, max_sev:null, rules:1, rules_on:1, rules_failing:0, rules_ok:1 },
+        "Chất lượng · FSMS": { count:0, open:0, acked:0, max_sev:null, rules:1, rules_on:1, rules_failing:0, rules_ok:1 },
+        "Vận chuyển":        { count:0, open:0, acked:0, max_sev:null, rules:1, rules_on:1, rules_failing:0, rules_ok:1 }
+      } } }) };
+    }
+    return orig(u, o);
+  };
+  await window.APP.refresh();
+  await new Promise((r) => setTimeout(r, 400));
+  const cls = (i) => [...document.querySelector(`.tc-lo-hotspot[data-lo-stage="${i}"]`).classList]
+    .find((c) => c.startsWith("tc-lo-h-"));
+  window.fetch = orig;
+  return { s02: cls(1), s01: cls(0), badge: document.querySelector(".tc-view-banner-badge")?.textContent.trim() };
+});
+// 02 = Sản xuất (ok) + Tài sản·bảo trì (bật nhưng LỖI) → không được xanh
+check("lưu đồ: rule bật-nhưng-lỗi KHÔNG tính là đang canh (" + loFail.s02 + ")",
+  loFail.s02 === "tc-lo-h-unwatched");
+// 01 = Kho + Mua hàng, cả hai rule chạy được và sạch → mới được xanh
+check("lưu đồ: mọi mảng canh được và sạch thì mới xanh (" + loFail.s01 + ")",
+  loFail.s01 === "tc-lo-h-clean");
+check("lưu đồ: badge nêu số công đoạn mù (" + loFail.badge + ")", /chưa canh/.test(loFail.badge || ""));
+
+await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.waitForTimeout(1400);
 
 // Poll 60s KHÔNG được dựng lại overlay: dựng lại làm mọi animateMotion (SMIL)
 // nhảy về đầu đường mỗi phút. shell.js phải đi qua update() của view.
