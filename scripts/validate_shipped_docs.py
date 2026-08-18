@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -191,6 +192,22 @@ def main() -> int:
     role_fx = os.path.join(FIXTURES_DIR, "role.json")
     if not os.path.exists(role_fx):
         err("Thiếu fixtures/role.json")
+
+    # 2b) Lưu đồ xưởng: tên mảng trong STAGES (views/luodo.js) phải khớp TC Domain seed.
+    # Sai một ký tự (dấu, hoặc · vs -) thì công đoạn im lặng ra "chưa khai mảng" —
+    # không lỗi console, không ai biết. Bắt tĩnh ở đây.
+    luodo_js = os.path.join(APP, "public", "tc", "views", "luodo.js")
+    if os.path.exists(luodo_js):
+        src = open(luodo_js, encoding="utf-8").read()
+        used = set()
+        for m in re.finditer(r"domains:\s*\[([^\]]+)\]", src):
+            used |= {x.strip().strip('"') for x in m.group(1).split(",") if x.strip()}
+        if not used:
+            err("[luodo] không đọc được mảng nào từ STAGES — regex hỏng hoặc file đổi cấu trúc")
+        for d in sorted(used - domain_names):
+            err(f"[luodo] STAGES neo vào mảng không có trong TC Domain seed: {d!r}")
+    else:
+        warn("Thiếu views/luodo.js (màn lưu đồ xưởng)")
 
     # 3) __init__.py cho các package chính
     for pkg in ["", "api", "tc", "tc/rules", "tc/notify", "config", "tests", "tacchien", "tacchien/doctype"]:

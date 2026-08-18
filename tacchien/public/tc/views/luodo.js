@@ -47,6 +47,18 @@ const PATHS = {
 const SEV_RANK = { P1: 3, P2: 2, P3: 1 };
 const AUTO_MS = 5200;
 
+// ⚠️ @media (prefers-reduced-motion) chỉ tắt được CSS animation/transition.
+// Hạt trên lưu đồ là SMIL (<animateMotion>) nên CSS KHÔNG chạm tới — đã đo:
+// với reduce, animationDuration về 1e-05s mà hạt vẫn chạy. Phải tắt bằng JS.
+const REDUCE = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function applyMotionPref() {
+  const svg = S.container && S.container.querySelector("[data-lo-svg]");
+  if (!svg || !svg.pauseAnimations) return;
+  if (REDUCE.matches || !S.playing) svg.pauseAnimations();
+  else svg.unpauseAnimations();
+}
+
 let S = {};
 
 // ── Trạng thái công đoạn ─────────────────────────────────────────────────────
@@ -78,29 +90,66 @@ export async function render({ container, tv }) {
     container,
     domains: d.domains || {},
     active: 0,
-    playing: true,
+    playing: !REDUCE.matches,  // chuyển động nền của bản đồ
+    auto: true,                // băng chuyền tự đổi công đoạn (khái niệm RIÊNG)
     timer: null,
     tv: !!tv,
   };
   // Mở thẳng vào công đoạn nặng nhất — màn này để phát hiện, không để ngắm.
   const worst = STAGES.map((s, i) => ({ i, r: SEV_RANK[stageState(s, S.domains).maxSev] || 0 }))
     .sort((a, b) => b.r - a.r)[0];
-  if (worst && worst.r > 0) { S.active = worst.i; S.playing = false; }
+  // Có công đoạn nguy → dừng BĂNG CHUYỀN để người dùng đọc kỹ, nhưng vẫn để bản
+  // đồ chạy: chính chuyển động đó tạo cảm giác "dây chuyền đang sống" cho 2-giây test.
+  if (worst && worst.r > 0) { S.active = worst.i; S.auto = false; }
 
   paint();
   bind();
   schedule();
+  applyMotionPref();
   scrollActiveIntoView();
+  REDUCE.addEventListener("change", applyMotionPref);
 }
 
 export function destroy() {
   if (S.timer) clearInterval(S.timer);
   S.timer = null;
+  REDUCE.removeEventListener("change", applyMotionPref);
+}
+
+// Poll 60s gọi hàm này thay vì render lại cả view. Dựng lại overlay = mọi
+// animateMotion khởi động lại từ t=0 → đã đo: hạt nhảy vị trí mỗi 60 giây.
+// Ở đây chỉ cập nhật phần phụ thuộc dữ liệu, KHÔNG đụng vào <svg>.
+export async function update() {
+  const d = await call("tacchien.api.luodo.get_luodo");
+  S.domains = d.domains || {};
+  repaintData();
+}
+
+function repaintData() {
+  const root = S.container;
+  if (!root) return;
+  STAGES.forEach((stage, i) => {
+    const st = stageState(stage, S.domains);
+    const hot = root.querySelector(`.tc-lo-hotspot[data-lo-stage="${i}"]`);
+    if (hot) {
+      hot.className = `tc-lo-hotspot tc-lo-h-${st.state}${i === S.active ? " tc-active" : ""}`;
+      hot.setAttribute("aria-label", `${stage.number}. ${stage.name} — ${STATE_LABEL[st.state]}`);
+    }
+    const dot = root.querySelector(`.tc-lo-nav-btn[data-lo-stage="${i}"] .tc-dot`);
+    if (dot) {
+      dot.className = `tc-dot tc-lo-dot-${st.state}`;
+      dot.title = STATE_LABEL[st.state];
+    }
+  });
+  const badge = root.querySelector(".tc-view-banner-badge");
+  if (badge) badge.textContent = summaryBadge(summary());
+  const card = root.querySelector("[data-lo-active]");
+  if (card) card.outerHTML = String(activeCard());
 }
 
 function schedule() {
   if (S.timer) clearInterval(S.timer);
-  if (!S.playing) return;
+  if (!S.playing || !S.auto || REDUCE.matches) return;
   S.timer = setInterval(() => {
     S.active = (S.active + 1) % STAGES.length;
     repaintActive();
@@ -336,22 +385,18 @@ function bind() {
     const play = ev.target.closest("[data-lo=play]");
     if (play) {
       S.playing = !S.playing;
+      S.auto = S.playing;        // bật lại chuyển động thì bật lại cả băng chuyền
       play.textContent = S.playing ? "❚❚ Tạm dừng" : "▶ Tiếp tục";
       const canvas = S.container.querySelector("[data-lo-canvas]");
       if (canvas) canvas.classList.toggle("tc-lo-paused", !S.playing);
-      const svg = S.container.querySelector("[data-lo-svg]");
-      if (svg) { S.playing ? svg.unpauseAnimations() : svg.pauseAnimations(); }
+      applyMotionPref();
       schedule();
       return;
     }
     const btn = ev.target.closest("[data-lo-stage]");
     if (!btn) return;
     S.active = Number(btn.dataset.loStage);
-    S.playing = false;              // người dùng đã chọn → đừng cướp quyền điều khiển
-    const play2 = S.container.querySelector("[data-lo=play]");
-    if (play2) play2.textContent = "▶ Tiếp tục";
-    const canvas = S.container.querySelector("[data-lo-canvas]");
-    if (canvas) canvas.classList.add("tc-lo-paused");
+    S.auto = false;   // người dùng đã chọn → đừng cướp quyền, nhưng KHÔNG đóng băng bản đồ
     schedule();
     repaintActive();
   });

@@ -129,7 +129,18 @@ async function renderRoute() {
   }
 }
 
-function refreshCurrent() {
+async function refreshCurrent() {
+  // Poll 60s: view nào hỗ trợ cập nhật TẠI CHỖ thì dùng, đừng dựng lại DOM.
+  // Với lưu đồ, dựng lại overlay làm mọi animateMotion (SMIL) nhảy về đầu đường.
+  if (currentView && typeof currentView.update === "function") {
+    try {
+      await currentView.update();
+      setLive("ok");
+      return;
+    } catch (e) {
+      console.warn("[tc] update lỗi, render lại toàn bộ", e);
+    }
+  }
   renderRoute();
 }
 

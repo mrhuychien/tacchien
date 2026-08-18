@@ -174,14 +174,50 @@ check("lưu đồ: công đoạn chưa có rule ra 'chưa giám sát', KHÔNG xa
   lo.s02 === "tc-lo-h-unwatched" && lo.s03 === "tc-lo-h-unwatched" && lo.s06 === "tc-lo-h-unwatched");
 check("lưu đồ: thẻ công đoạn liệt kê mảng đang gác", lo.domChips === 2);
 
+// Poll 60s KHÔNG được dựng lại overlay: dựng lại làm mọi animateMotion (SMIL)
+// nhảy về đầu đường mỗi phút. shell.js phải đi qua update() của view.
+const loPoll = await page.evaluate(async () => {
+  const before = document.querySelector("[data-lo-svg]");
+  await window.APP.refresh();
+  await new Promise((r) => setTimeout(r, 500));
+  return { giuNguyenSvg: before === document.querySelector("[data-lo-svg]"),
+           conHotspot: document.querySelectorAll(".tc-lo-hotspot").length };
+});
+check("lưu đồ: poll cập nhật tại chỗ, không dựng lại overlay",
+  loPoll.giuNguyenSvg && loPoll.conHotspot === 10);
+
+// prefers-reduced-motion phải dừng CẢ hạt SMIL. @media chỉ tắt được CSS animation
+// nên riêng chỗ này phải tắt bằng JS (svg.pauseAnimations).
+await page.emulateMedia({ reducedMotion: "reduce" });
+await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.waitForTimeout(1500);
+const loRM = await page.evaluate(async () => {
+  const pos = () => { const d = document.querySelector(".tc-lo-particle"); const m = d && d.getCTM && d.getCTM();
+                      return m ? Math.round(m.e) + "," + Math.round(m.f) : "n/a"; };
+  const a = pos();
+  await new Promise((r) => setTimeout(r, 1000));
+  return { truoc: a, sau: pos() };
+});
+check("lưu đồ: reduced-motion dừng cả hạt SMIL (" + loRM.truoc + " → " + loRM.sau + ")",
+  loRM.truoc === loRM.sau && loRM.truoc !== "n/a");
+await page.emulateMedia({ reducedMotion: "no-preference" });
+await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.waitForTimeout(1500);
+
 await page.click('.tc-lo-nav-btn[data-lo-stage="3"]');
 await page.waitForTimeout(400);
-const loPick = await page.evaluate(() => ({
-  title: document.querySelector("[data-lo-active] strong")?.textContent.trim(),
-  paused: document.querySelector(".tc-lo-canvas")?.classList.contains("tc-lo-paused"),
-}));
+const loPick = await page.evaluate(async () => {
+  const t = document.querySelector("[data-lo-active] strong")?.textContent.trim();
+  const pos = () => { const d = document.querySelector(".tc-lo-particle"); const m = d && d.getCTM && d.getCTM();
+                      return m ? Math.round(m.f) : null; };
+  const a = pos();
+  await new Promise((r) => setTimeout(r, 900));
+  return { title: t, banDoConChay: a !== pos() };
+});
 check("lưu đồ: bấm công đoạn 04 đổi thẻ (" + loPick.title + ")", /Ủ nguội/.test(loPick.title || ""));
-check("lưu đồ: chọn thủ công thì dừng tự chạy", loPick.paused === true);
+// Chọn thủ công dừng BĂNG CHUYỀN nhưng KHÔNG đóng băng bản đồ — chính chuyển động
+// đó tạo cảm giác "dây chuyền đang sống" cho 2-giây test.
+check("lưu đồ: chọn công đoạn không đóng băng bản đồ", loPick.banDoConChay === true);
 
 // Lớp nền: KHÔNG được là pseudo-element fixed (nó nằm ở stacking context gốc và
 // phủ luôn navbar/footer của templates/web.html — đã đo bằng pixel).
