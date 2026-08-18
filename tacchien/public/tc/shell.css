@@ -18,6 +18,8 @@
   --tc-lime:   #d9ee75;   /* chanh — accent TRÊN NỀN TỐI, CTA */
   --tc-orange: #ef8148;   /* cam — accent TRÊN NỀN SÁNG, tiến độ, active */
   --tc-orange-deep: #b4470f; /* cam đậm — dùng khi cam phải LÀM CHỮ (WCAG) */
+  --tc-danger-bright: #ff6f57; /* coral sáng hơn --tc-danger: chỉ dùng làm NỀN chip chữ ink
+                                  (#15352f trên #ff6046 chỉ 4.43:1, chưa đạt AA) */
 
   /* ── Nền & chữ ── */
   --tc-bg: var(--tc-paper);
@@ -30,7 +32,8 @@
   --tc-border-strong: rgba(21, 53, 47, 0.56); /* 3.3:1 trên paper — ranh giới control (SC 1.4.11) */
 
   /* ── Màu ngữ nghĩa (ánh xạ từ legend nguyên liệu hgboard) ── */
-  --tc-primary: var(--tc-orange);  /* hành động/điều hướng active */
+  --tc-primary: var(--tc-orange);       /* accent hành động — dùng làm NỀN/đường kẻ */
+  --tc-primary-deep: var(--tc-orange-deep); /* dùng khi accent phải LÀM CHỮ hoặc viền focus */
   --tc-success: #43cf78;           /* legend-oil  — sạch, trôi chảy */
   --tc-danger:  #ff6046;           /* legend-bean — P1, tắc */
   --tc-warning: #ffc83f;           /* legend-sugar— P2, chậm */
@@ -80,7 +83,15 @@
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background: radial-gradient(circle at 50% 0, #ffffff 0, var(--tc-paper) 62%);
 }
-.tc-app a { text-decoration: none; color: inherit; }
+/* ⚠️ `.tc-app a { color: inherit }` có specificity (0,1,1) → đè mọi rule 1-class
+   (.tc-link, .tc-cell-*, .tc-nav-item…) đặt trên thẻ <a>. Chỉ áp cho <a> KHÔNG class. */
+.tc-app a { text-decoration: none; }
+.tc-app a:not([class]) { color: inherit; }
+
+/* Reset scope trong app: web.html của ERPNext kéo Bootstrap reboot
+   (label/p/h*/ul có margin) — không reset là rò khoảng cách vào filter bar. */
+.tc-app h1, .tc-app h2, .tc-app h3, .tc-app h4,
+.tc-app p, .tc-app ul, .tc-app ol, .tc-app label, .tc-app figure { margin: 0; padding: 0; }
 
 /* ── Header / bottom-nav (glass ấm, fixed) ── */
 .tc-header, .tc-bottom-nav {
@@ -109,7 +120,7 @@
 .tc-main { position: relative; z-index: 1; padding: 1rem; }
 
 /* ── Brand mark (port .flow-brand của hgboard) ── */
-.tc-brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 0; }
+.tc-brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 0; color: var(--tc-text); }
 .tc-brand-mark {
   width: 34px; height: 34px; flex-shrink: 0;
   background: var(--tc-ink); color: var(--tc-lime);
@@ -126,18 +137,20 @@
 /* ── Đèn "đang giám sát" (port .flow-status) ── */
 .tc-live {
   display: flex; align-items: center; gap: 8px;
-  font-size: 0.56rem; font-weight: 700; letter-spacing: 0.15em;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.15em;
   text-transform: uppercase; color: var(--tc-text-2); white-space: nowrap;
 }
 .tc-live i {
   width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
-  background: #4daf71; border: 4px solid #dceee1;
+  /* Đậm hơn --tc-success một nấc để chấm 11px đạt 3:1 với nền glass (SC 1.4.11);
+     vẫn cùng hue lá của token success. */
+  background: #29a157; border: 4px solid rgba(41, 161, 87, 0.22);
   animation: tcStatusPulse 1.6s ease-out infinite;
 }
 @keyframes tcStatusPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(77, 175, 113, 0.55); }
-  70%  { box-shadow: 0 0 0 8px rgba(77, 175, 113, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(77, 175, 113, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(41, 161, 87, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(41, 161, 87, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(41, 161, 87, 0); }
 }
 
 /* ── Bottom nav (port nhịp .stage-nav: rail tiến độ + active cam) ── */
@@ -146,7 +159,7 @@
   background: rgba(21, 53, 47, 0.20);
 }
 .tc-nav-progress i {
-  display: block; height: 100%; background: var(--tc-orange);
+  display: block; height: 100%; background: var(--tc-primary);
   transition: width 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .tc-nav-item {
@@ -156,7 +169,7 @@
 }
 .tc-nav-item i { font-size: 1.12rem; }
 .tc-nav-item:hover { color: var(--tc-text); }
-.tc-nav-item.tc-active { color: var(--tc-orange-deep); font-weight: 700; }
+.tc-nav-item.tc-active { color: var(--tc-primary-deep); font-weight: 700; }
 
 .tc-icon-btn {
   width: 38px; height: 38px; border: 1px solid transparent; background: transparent;
@@ -175,11 +188,11 @@
 }
 .tc-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
 .tc-label {
-  font-size: 0.62rem; color: var(--tc-text-3); text-transform: uppercase;
+  font-size: 0.68rem; color: var(--tc-text-3); text-transform: uppercase;
   letter-spacing: 0.14em; font-weight: 700;
 }
 .tc-link { color: var(--tc-green); font-size: 0.78rem; font-weight: 700; border-bottom: 1px solid rgba(13, 77, 66, 0.28); }
-.tc-link:hover { color: var(--tc-orange-deep); border-bottom-color: var(--tc-orange-deep); }
+.tc-link:hover { color: var(--tc-primary-deep); border-bottom-color: var(--tc-primary-deep); }
 .tc-mt-3 { margin-top: 1rem; }
 
 /* ── Health strip ── */
@@ -190,7 +203,7 @@
 .tc-health-cell {
   position: relative; display: flex; flex-direction: column; justify-content: space-between;
   gap: 6px; min-height: 68px; padding: 0.6rem 0.65rem; border-radius: var(--tc-radius-sm);
-  border: 1px solid var(--tc-border); font-weight: 700; font-size: 0.78rem;
+  border: 1px solid var(--tc-border); color: var(--tc-text); font-weight: 700; font-size: 0.78rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 /* Thanh phát sáng — port .flow-legend i của hgboard (chữ ký nhận diện) */
@@ -207,7 +220,7 @@
 .tc-cell-p2    { --tc-cell-accent: var(--tc-warning); background: rgba(255, 200, 63, 0.22); color: var(--tc-on-warning); border-color: rgba(255, 200, 63, 0.45); }
 .tc-cell-p3    { --tc-cell-accent: var(--tc-info);    background: rgba(50, 191, 229, 0.14); color: var(--tc-on-info);    border-color: rgba(50, 191, 229, 0.32); }
 /* P1 nhấp nháy vòng — port .stage-hotspot.active::before của hgboard */
-.tc-cell-p1::after {
+.tc-health-cell.tc-cell-p1::after {
   content: ""; position: absolute; inset: -1px; border-radius: inherit;
   border: 1px solid var(--tc-danger); pointer-events: none;
   animation: tcRingPulse 2s ease-out infinite;
@@ -221,7 +234,7 @@
   background: var(--tc-surface); border: 1px solid var(--tc-border);
   border-radius: var(--tc-radius-md); padding: 1rem; box-shadow: var(--tc-shadow-sm);
 }
-.tc-kpi-label { font-size: 0.62rem; color: var(--tc-text-3); text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700; }
+.tc-kpi-label { font-size: 0.68rem; color: var(--tc-text-3); text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700; }
 .tc-kpi-value { font: 700 1.5rem/1.05 var(--tc-font-display); letter-spacing: -0.045em; margin-top: 6px; }
 .tc-kpi-sub { font-size: 0.72rem; color: var(--tc-text-2); margin-top: 4px; }
 .tc-kpi-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
@@ -237,7 +250,7 @@
 .tc-feed { display: flex; flex-direction: column; }
 .tc-feed-row {
   display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0;
-  border-bottom: 1px solid var(--tc-border);
+  border-bottom: 1px solid var(--tc-border); color: var(--tc-text);
 }
 .tc-feed-row:last-child { border-bottom: 0; }
 .tc-feed-main { display: flex; flex-direction: column; min-width: 0; }
@@ -262,7 +275,7 @@
 }
 .tc-view-banner > * { position: relative; z-index: 1; }
 .tc-view-banner-eyebrow {
-  font-size: 0.55rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
   color: rgba(255, 255, 255, 0.62) !important; margin-bottom: 6px;
 }
 .tc-view-banner-title {
@@ -280,7 +293,7 @@
 /* ── Table (dùng cho #/signals, #/bophan) ── */
 .tc-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .tc-table th, .tc-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--tc-border); }
-.tc-table th { background: var(--tc-surface-2); font-size: 0.62rem; font-weight: 700; color: var(--tc-text-2); text-transform: uppercase; letter-spacing: 0.14em; }
+.tc-table th { background: var(--tc-surface-2); font-size: 0.68rem; font-weight: 700; color: var(--tc-text-2); text-transform: uppercase; letter-spacing: 0.14em; }
 .tc-table-row-clickable { cursor: pointer; }
 .tc-table-row-clickable:hover { background: var(--tc-surface-2); }
 @media (max-width: 767px) {
@@ -288,7 +301,7 @@
   .tc-table, .tc-table tbody, .tc-table tr, .tc-table td { display: block; width: 100%; }
   .tc-table tr { background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: var(--tc-radius-md); padding: 0.75rem; margin-bottom: 0.5rem; }
   .tc-table td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 0.25rem 0; }
-  .tc-table td::before { content: attr(data-label); font-weight: 700; color: var(--tc-text-3); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; }
+  .tc-table td::before { content: attr(data-label); font-weight: 700; color: var(--tc-text-3); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em; }
 }
 
 /* ── Buttons (port .play-button ghost pill + CTA chanh của .active-card b) ── */
@@ -315,10 +328,11 @@
   display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;
 }
 .tc-toast {
-  background: var(--tc-surface); border: 1px solid var(--tc-border); border-left: 4px solid var(--tc-orange);
+  background: var(--tc-surface); border: 1px solid var(--tc-border); border-left: 4px solid var(--tc-info);
   box-shadow: var(--tc-shadow-lg); border-radius: var(--tc-radius-md); padding: 0.8rem 1rem;
   font-size: 0.85rem; font-weight: 600; max-width: 320px; pointer-events: auto; animation: tcToastIn 0.25s ease;
 }
+.tc-toast.tc-info { border-left-color: var(--tc-info); }
 .tc-toast.tc-success { border-left-color: var(--tc-success); }
 .tc-toast.tc-error { border-left-color: var(--tc-danger); }
 .tc-toast.tc-warning { border-left-color: var(--tc-warning); }
@@ -350,7 +364,7 @@
   background: var(--tc-surface); color: var(--tc-text); font-weight: 600; font-size: 0.82rem;
   font-family: inherit;
 }
-.tc-filter-field select:focus-visible { outline: 2px solid var(--tc-orange-deep); outline-offset: 1px; }
+.tc-filter-field select:focus-visible { outline: 2px solid var(--tc-primary-deep); outline-offset: 1px; }
 
 /* ── Signal card ── */
 .tc-signals-list { display: flex; flex-direction: column; gap: 0.6rem; }
@@ -361,7 +375,7 @@
 .tc-sig-desc { font-size: 0.85rem; color: var(--tc-text); margin-top: 7px; }
 .tc-sig-actions { display: flex; gap: 0.45rem; margin-top: 0.8rem; align-items: center; }
 .tc-badge-status { font-size: 0.62rem; font-weight: 700; padding: 4px 9px; border-radius: var(--tc-radius-pill); text-transform: uppercase; letter-spacing: 0.08em; }
-.tc-st-open     { background: rgba(239, 129, 72, 0.18); color: #91430f; }
+.tc-st-open     { background: rgba(50, 191, 229, 0.16); color: var(--tc-on-info); }
 .tc-st-acked    { background: rgba(255, 200, 63, 0.26); color: var(--tc-on-warning); }
 .tc-st-resolved { background: rgba(67, 207, 120, 0.18); color: var(--tc-on-success); }
 .tc-st-muted    { background: var(--tc-surface-2); color: var(--tc-text-2); }
@@ -390,7 +404,7 @@
 .tc-nav-icon-wrap { position: relative; display: inline-flex; }
 .tc-nav-badge {
   position: absolute; top: -6px; right: -10px; min-width: 16px; height: 16px;
-  padding: 0 4px; border-radius: 8px; background: #ff6f57; color: var(--tc-ink);
+  padding: 0 4px; border-radius: 8px; background: var(--tc-danger-bright); color: var(--tc-ink);
   font-size: 0.6rem; font-weight: 800; line-height: 16px; text-align: center;
 }
 .tc-nav-badge[hidden] { display: none; }
@@ -460,7 +474,7 @@
 .tc-app button:focus-visible,
 .tc-app select:focus-visible,
 .tc-app [tabindex]:focus-visible {
-  outline: 2px solid var(--tc-orange-deep); /* 4.95:1 trên paper */
+  outline: 2px solid var(--tc-primary-deep); /* 4.95:1 trên paper */
   outline-offset: 2px;
   border-radius: var(--tc-radius-sm);
 }
