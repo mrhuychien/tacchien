@@ -13,6 +13,7 @@ let chart = null;
 export async function render({ container }) {
   const d = await call("tacchien.api.baocao.get_baocao");
   const m = d.metrics;
+  const urgent = (m.signals_open.P1 || 0) + (m.signals_open.P2 || 0);
   setHTML(
     container,
     html`
@@ -20,7 +21,7 @@ export async function render({ container }) {
         eyebrow: "Trụ 1 · toàn cảnh hôm nay",
         title: "Báo cáo hoạt động",
         subtitle: `Cập nhật ${relTime(d.generated_at) || "vừa xong"}`,
-        badge: `${(m.signals_open.P1 || 0) + (m.signals_open.P2 || 0)} việc gấp`,
+        badge: urgent ? `${urgent} việc gấp` : "",
       })}
       <div class="tc-kpi-grid">
         ${kpiCard("Doanh thu hôm nay", formatVNDShort(m.revenue_today), channelSub(m.revenue_by_channel))}
@@ -37,7 +38,7 @@ export async function render({ container }) {
       ${feedCard(d.feed, "Diễn biến nghiệp vụ mới", "#/hanhdong?pillar=bao_cao")}`
   );
   chart = await drawSparkline("tc-spark", d.sparkline, chart);
-  if (window.APP) window.APP.setActionBadge((m.signals_open.P1 || 0) + (m.signals_open.P2 || 0));
+  if (window.APP) window.APP.setActionBadge(urgent);
 }
 
 function domainBlock(domains) {

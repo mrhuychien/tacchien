@@ -23,6 +23,29 @@ const ROUTES = [
 let renderToken = 0;
 let currentView = null;
 
+// ── Đèn "đang giám sát" phải phản ánh trạng thái THẬT (không nhấp nháy giả) ──
+const POLL_MS = 60000;
+const LIVE_LABEL = { ok: "Đang giám sát", stale: "Chậm cập nhật", error: "Mất kết nối" };
+let liveState = "ok";
+let lastOkAt = Date.now();
+
+function applyLive() {
+  const n = document.querySelector("[data-live]");
+  if (!n) return;
+  n.dataset.state = liveState;
+  const lbl = n.querySelector("[data-live-label]");
+  if (lbl) lbl.textContent = LIVE_LABEL[liveState] || LIVE_LABEL.ok;
+  n.title = liveState === "ok"
+    ? "Làm mới gần nhất: " + new Date(lastOkAt).toLocaleTimeString("vi-VN")
+    : "Dữ liệu có thể đã cũ — bấm nút làm mới";
+}
+
+function setLive(state) {
+  if (state === "ok") lastOkAt = Date.now();
+  liveState = state;
+  applyLive();
+}
+
 function ensureChrome() {
   const app = el("tc-app");
   if (!el("tc-header")) {
@@ -74,6 +97,7 @@ async function renderRoute() {
 
   document.getElementById("tc-app").classList.toggle("tc-tv", tv);
   setHTML(el("tc-header"), headerHTML({ title: matched.title, back: matched.back }));
+  applyLive();
   setHTML(el("tc-bottom-nav"), navHTML(path));
   el("tc-header").style.display = tv ? "none" : "";
   el("tc-bottom-nav").style.display = tv ? "none" : "";
@@ -86,9 +110,11 @@ async function renderRoute() {
     if (token !== renderToken) return; // race: điều hướng khác đã tới
     currentView = mod;
     await mod.render({ container: view, query, params: matched.params, tv });
+    if (token === renderToken) setLive("ok");
   } catch (e) {
     console.error("[tc] view error", e);
     if (token === renderToken) {
+      setLive("error");
       setHTML(view, html`<div class="tc-empty"><div class="tc-empty-icon">⚠️</div>
         <div class="tc-empty-title">Lỗi tải màn hình</div><div>${e.message || e}</div></div>`);
     }
@@ -114,13 +140,16 @@ function init() {
   ensureChrome();
   buildBanner();
   bindEvents();
+  setInterval(() => {
+    if (liveState === "ok" && Date.now() - lastOkAt > POLL_MS * 2.5) setLive("stale");
+  }, 15000);
   startRealtime({
     onPoll: refreshCurrent,
     onNewSignal: (payload) => {
       showToast(`${payload.severity} · ${payload.title}`, payload.severity === "P1" ? "error" : "warning");
       refreshCurrent();
     },
-    pollMs: 60000,
+    pollMs: POLL_MS,
   });
   renderRoute();
 }

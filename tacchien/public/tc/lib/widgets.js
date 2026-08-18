@@ -59,15 +59,21 @@ export function feedCard(rows, title, seeAllHref) {
   </div>`;
 }
 
-// Bảng màu chart — bám design token của shell.css (palette hgboard).
-const CHART = {
-  line: "#0d4d42",                  // --tc-green
-  fill: "rgba(217, 238, 117, 0.32)",// --tc-lime nhạt
-  ref: "#a3b0ac",                   // đường tham chiếu, xám ngả rêu
-  text: "#4a615c",                  // --tc-text-2
-  grid: "rgba(21, 53, 47, 0.10)",   // --tc-border
-  font: '"Be Vietnam Pro", -apple-system, sans-serif',
-};
+// Bảng màu chart — ĐỌC THẲNG design token từ shell.css để không bao giờ lệch bản sao.
+function cssVar(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+function chartColors() {
+  return {
+    line: cssVar("--tc-chart-line", "#0d4d42"),
+    fill: cssVar("--tc-chart-fill", "rgba(217,238,117,.32)"),
+    ref:  cssVar("--tc-chart-ref", "#859691"),
+    text: cssVar("--tc-text-2", "#4a615c"),
+    grid: cssVar("--tc-chart-grid", "rgba(21,53,47,.12)"),
+    font: '"Be Vietnam Pro", -apple-system, sans-serif',
+  };
+}
 
 let _chartLibP = null;
 export function loadChartLib() {
@@ -90,6 +96,7 @@ export async function drawSparkline(canvasId, sp, prev) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
   if (prev) prev.destroy();
+  const CHART = chartColors();
   return new window.Chart(canvas, {
     type: "line",
     data: {
@@ -97,7 +104,7 @@ export async function drawSparkline(canvasId, sp, prev) {
       datasets: [
         // Palette hgboard: đường xanh rêu trên nền chanh nhạt; đường tham chiếu xám ink.
         { label: "Doanh thu", data: sp.revenue, borderColor: CHART.line, backgroundColor: CHART.fill, borderWidth: 2.5, fill: true, tension: 0.3, pointRadius: 0 },
-        { label: "TB cùng thứ", data: sp.avg_same_weekday, borderColor: CHART.ref, borderDash: [4, 4], borderWidth: 1.5, fill: false, tension: 0.3, pointRadius: 0 },
+        { label: "TB cùng thứ", data: sp.avg_same_weekday, borderColor: CHART.ref, borderDash: [5, 4], borderWidth: 2, fill: false, tension: 0.3, pointRadius: 0 },
       ],
     },
     options: {
