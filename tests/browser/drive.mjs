@@ -174,6 +174,14 @@ check("lưu đồ: công đoạn 04 xanh biển theo P3 của Chất lượng", 
 check("lưu đồ: công đoạn chưa có rule ra 'chưa giám sát', KHÔNG xanh giả",
   lo.s02 === "tc-lo-h-unwatched" && lo.s03 === "tc-lo-h-unwatched" && lo.s06 === "tc-lo-h-unwatched");
 check("lưu đồ: thẻ công đoạn liệt kê mảng đang gác", lo.domChips === 2);
+// Đếm chip là chưa đủ: một lần sửa hụt đã làm mọi chip in "chưa có rule" trong
+// khi mock cho rules_ok=3. Phải soi ĐÚNG CHỮ.
+const chipTexts = await page.evaluate(() =>
+  [...document.querySelectorAll("[data-lo-active] .tc-lo-dom")].map((e) => e.textContent.trim()));
+check("lưu đồ: chip mảng có rule + có tín hiệu ghi đúng số (" + chipTexts[0] + ")",
+  /Kho · tồn · HSD · 3 \(1 đã ack\)/.test(chipTexts[0] || ""));
+check("lưu đồ: chip mảng có rule mà sạch ghi 'sạch' (" + chipTexts[1] + ")",
+  /Mua hàng · NCC · sạch/.test(chipTexts[1] || ""));
 
 // aria-current phải là token hợp lệ. html`` escape dấu nháy nên nội suy CẢ cụm
 // attribute (`aria-current="true"`) sẽ render thành aria-current='"true"'.

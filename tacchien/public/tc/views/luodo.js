@@ -280,9 +280,9 @@ function activeCard() {
         ${st.parts.map((p) =>
           p.missing
             ? html`<span class="tc-lo-dom tc-lo-dom-missing" title="Tên mảng trong STAGES không khớp dữ liệu — lỗi cấu hình, không phải trạng thái vận hành">${p.name} · chưa khai mảng</span>`
-            : html`<a class="tc-lo-dom ${p.rules_on ? "" : "tc-lo-dom-missing"}"
+            : html`<a class="tc-lo-dom ${p.rules_ok ? "" : "tc-lo-dom-missing"}"
                 href="#/domain/${encodeURIComponent(p.name)}">
-                ${p.name}${p.rules_on ? (p.count ? ` · ${p.count}` : " · sạch") : " · chưa có rule"}
+                ${p.name}${domLabel(p)}
               </a>`
         )}
       </div>
