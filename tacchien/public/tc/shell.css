@@ -82,12 +82,12 @@
   padding-top: var(--tc-header-h);
   padding-bottom: var(--tc-bottom-h);
   position: relative;
-}
-/* Lớp nền radial của hgboard (fixed → không trôi khi cuộn) */
-.tc-app::before {
-  content: "";
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  /* Nền radial của hgboard, neo theo viewport nên không trôi khi cuộn.
+     ⚠️ KHÔNG dùng `::before {position:fixed}`: .tc-app (z-index:auto) không tạo
+     stacking context nên lớp đó nằm ở context gốc và phủ luôn navbar/footer của
+     templates/web.html. background-attachment:fixed bị clip trong hộp .tc-app. */
   background: radial-gradient(circle at 50% 0, #ffffff 0, var(--tc-paper) 62%);
+  background-attachment: fixed;
 }
 /* ⚠️ `.tc-app a { color: inherit }` có specificity (0,1,1) → đè mọi rule 1-class
    (.tc-link, .tc-cell-*, .tc-nav-item…) đặt trên thẻ <a>. Chỉ áp cho <a> KHÔNG class. */
@@ -183,11 +183,17 @@
 .tc-nav-item {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 4px; color: var(--tc-text-2); font-size: 0.64rem; font-weight: 600;
-  letter-spacing: 0.02em; transition: color 0.25s ease;
+  letter-spacing: 0.02em; margin: 7px auto 6px; border-radius: var(--tc-radius-sm);
+  width: 100%; max-width: 190px; /* màn rộng: pill active vừa phải, không chiếm cả 1/3 */
+  transition: background 0.25s ease, color 0.25s ease;
 }
 .tc-nav-item i { font-size: 1.12rem; }
-.tc-nav-item:hover { color: var(--tc-text); }
-.tc-nav-item.tc-active { color: var(--tc-primary-deep); font-weight: 700; }
+.tc-nav-item:hover { background: rgba(255, 255, 255, 0.7); color: var(--tc-text); }
+/* .stage-nav của hgboard phân biệt active bằng NỀN sáng, không chỉ sắc chữ —
+   cần thiết khi nhìn màn TV từ xa. Vẫn giữ màu chữ đạt AA. */
+.tc-nav-item.tc-active {
+  background: rgba(255, 255, 255, 0.78); color: var(--tc-primary-deep); font-weight: 700;
+}
 
 .tc-icon-btn {
   width: 38px; height: 38px; border: 1px solid transparent; background: transparent;
@@ -213,13 +219,22 @@
 .tc-link:hover { color: var(--tc-primary-deep); border-bottom-color: var(--tc-primary-deep); }
 .tc-mt-3 { margin-top: 1rem; }
 
+/* Mặt dữ liệu chính (biểu đồ, lưới mảng) mang treatment .map-viewport của hgboard:
+   bo 28px + bóng sâu. `:has()` là progressive enhancement — trình duyệt cũ chỉ bỏ qua. */
+.tc-card:has(.tc-chart-wrap), .tc-card:has(.tc-health-grid) {
+  border-radius: var(--tc-radius-lg); box-shadow: var(--tc-shadow-lg); padding: 1.15rem;
+}
+@media (max-width: 900px) {
+  .tc-card:has(.tc-chart-wrap), .tc-card:has(.tc-health-grid) { border-radius: var(--tc-radius-md); }
+}
+
 /* ── Health strip ── */
 .tc-health { display: flex; flex-direction: column; gap: 0.75rem; }
 .tc-health-cluster-label { margin-bottom: 0.35rem; display: block; }
 .tc-health-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
 @media (min-width: 768px) { .tc-health-grid { grid-template-columns: repeat(5, 1fr); } }
 .tc-health-cell {
-  position: relative; display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; display: flex; flex-direction: column;
   gap: 6px; min-height: 68px; padding: 0.6rem 0.65rem; border-radius: var(--tc-radius-sm);
   border: 1px solid var(--tc-border); color: var(--tc-text); font-weight: 700; font-size: 0.78rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -231,7 +246,7 @@
   box-shadow: 0 0 10px var(--tc-cell-accent, transparent);
 }
 .tc-health-cell:hover { transform: translateY(-2px); box-shadow: var(--tc-shadow-md); }
-.tc-health-name { line-height: 1.2; }
+.tc-health-name { line-height: 1.2; margin-bottom: auto; }
 .tc-health-count { align-self: flex-end; font: 700 1.05rem/1 var(--tc-font-display); letter-spacing: -0.03em; }
 .tc-cell-clean { --tc-cell-accent: var(--tc-success); background: rgba(67, 207, 120, 0.14); color: var(--tc-on-success); border-color: rgba(67, 207, 120, 0.30); }
 .tc-cell-p1    { --tc-cell-accent: var(--tc-danger);  background: rgba(255, 96, 70, 0.14);  color: var(--tc-on-danger);  border-color: rgba(255, 96, 70, 0.38); }
@@ -244,6 +259,17 @@
   animation: tcRingPulse 2s ease-out infinite;
 }
 @keyframes tcRingPulse { 0% { opacity: 0.85; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+
+/* ── Legend mức độ (port .flow-legend của hgboard) — khoá màu cho lưới ô mảng ── */
+.tc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 0.65rem; }
+.tc-legend span {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem;
+  color: var(--tc-text-2); background: transparent; border: 0; /* chỉ mượn --tc-cell-accent */
+}
+.tc-legend i {
+  width: 26px; height: 5px; border-radius: var(--tc-radius-pill); flex-shrink: 0;
+  background: var(--tc-cell-accent); box-shadow: 0 0 10px var(--tc-cell-accent);
+}
 
 /* ── KPI grid ── */
 .tc-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
@@ -258,8 +284,10 @@
 .tc-kpi-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
 
 /* ── Pills / severity ── */
-.tc-pill { display: inline-block; padding: 4px 10px; border-radius: var(--tc-radius-pill); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.01em; }
-.tc-sev-p1   { background: rgba(255, 96, 70, 0.16);  color: var(--tc-on-danger); }
+/* position:relative — pill dùng chung modifier .tc-cell-* với ô health, nên nếu sau
+   này có trang trí ::before/::after gắn nhầm vào modifier thì nó vẫn bám pill. */
+.tc-pill { position: relative; display: inline-block; padding: 4px 10px; border-radius: var(--tc-radius-pill); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.01em; }
+.tc-sev-p1   { background: rgba(255, 96, 70, 0.16);  color: var(--tc-on-danger); box-shadow: 0 0 10px rgba(255, 96, 70, 0.28); }
 .tc-sev-p2   { background: rgba(255, 200, 63, 0.26); color: var(--tc-on-warning); }
 .tc-sev-p3   { background: rgba(50, 191, 229, 0.16); color: var(--tc-on-info); }
 .tc-sev-none { background: var(--tc-surface-2); color: var(--tc-text-2); }
@@ -284,7 +312,6 @@
   display: flex; justify-content: space-between; align-items: center; gap: 1rem;
   position: relative; overflow: hidden;
   box-shadow: var(--tc-shadow-lg);
-  animation: tcCardIn 0.45s ease both;
 }
 .tc-view-banner::before {
   content: ""; position: absolute; top: -60%; right: -18%; width: 68%; height: 220%;
@@ -297,16 +324,16 @@
   color: rgba(255, 255, 255, 0.62) !important; margin-bottom: 6px;
 }
 .tc-view-banner-title {
-  font: 600 1.45rem/1.05 var(--tc-font-display); letter-spacing: -0.045em;
-  color: #fff !important;
+  /* Thang chữ .flow-title h1 của hgboard: co giãn, line-height sát, tracking âm sâu. */
+  font: 600 clamp(1.55rem, 1.05rem + 2.4vw, 2.75rem)/0.92 var(--tc-font-display);
+  letter-spacing: -0.055em; color: #fff !important;
 }
 .tc-view-banner-subtitle { font-size: 0.82rem; margin-top: 6px; color: rgba(255, 255, 255, 0.7) !important; }
 .tc-view-banner-badge {
   background: var(--tc-lime); color: var(--tc-ink) !important; padding: 8px 13px;
   border-radius: var(--tc-radius-pill); font-size: 0.72rem; font-weight: 700;
-  white-space: nowrap; flex-shrink: 0;
+  white-space: nowrap; flex-shrink: 0; box-shadow: 0 0 18px rgba(217, 238, 117, 0.35);
 }
-@keyframes tcCardIn { from { opacity: 0; transform: translateY(10px); } }
 
 /* ── Table (dùng cho #/signals, #/bophan) ── */
 .tc-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
@@ -424,6 +451,7 @@
   position: absolute; top: -6px; right: -10px; min-width: 16px; height: 16px;
   padding: 0 4px; border-radius: 8px; background: var(--tc-danger-bright); color: var(--tc-ink);
   font-size: 0.6rem; font-weight: 800; line-height: 16px; text-align: center;
+  box-shadow: 0 0 10px rgba(255, 111, 87, 0.85);
 }
 .tc-nav-badge[hidden] { display: none; }
 

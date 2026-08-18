@@ -41,9 +41,19 @@ export async function render({ container }) {
   if (window.APP) window.APP.setActionBadge(urgent);
 }
 
+const LEGEND = [
+  { cls: "tc-cell-p1", label: "Nguy (P1)" },
+  { cls: "tc-cell-p2", label: "Cảnh báo (P2)" },
+  { cls: "tc-cell-p3", label: "Theo dõi (P3)" },
+  { cls: "tc-cell-clean", label: "Sạch" },
+];
+
 function domainBlock(domains) {
   return html`<div class="tc-card tc-mt-3">
     <div class="tc-card-head"><span class="tc-label">Mảng nghiệp vụ</span></div>
+    <div class="tc-legend">
+      ${LEGEND.map((l) => html`<span class="${l.cls}"><i></i>${l.label}</span>`)}
+    </div>
     <div class="tc-health-grid">${(domains || []).map(domainCell)}</div>
   </div>`;
 }

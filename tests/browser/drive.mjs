@@ -94,6 +94,7 @@ const chrome = await page.evaluate(() => {
 check("brand mark hiện ở route gốc", chrome.brand);
 check("đèn live có trạng thái thật (" + chrome.live + ")", chrome.live === "ok");
 check("banner có eyebrow", chrome.eyebrow);
+check("lưới mảng có dải legend khoá màu", (await page.locator(".tc-legend i").count()) === 4);
 check("rail tiến độ = 1/3 ở trụ Báo cáo (" + chrome.railWidth + "%)", chrome.railWidth === 33);
 // nếu `.tc-app a{color:inherit}` quay lại, 3 giá trị dưới sẽ đều thành rgb(21,53,47)
 check("màu .tc-link không bị reset <a> nuốt (" + chrome.linkColor + ")", chrome.linkColor === "rgb(13, 77, 66)");
@@ -112,6 +113,18 @@ const overlay = await page.evaluate(() => {
 });
 check("vòng nhấp nháy KHÔNG rò ra pill rollup (" + overlay.pillAfter + ")", overlay.pillAfter === "none");
 check("rail = 2/3 ở trụ Giám sát (" + overlay.railWidth + "%)", overlay.railWidth === 67);
+
+// Lớp nền: KHÔNG được là pseudo-element fixed (nó nằm ở stacking context gốc và
+// phủ luôn navbar/footer của templates/web.html — đã đo bằng pixel).
+const bgLayer = await page.evaluate(() => {
+  const app = document.querySelector(".tc-app");
+  return {
+    beforeContent: getComputedStyle(app, "::before").content,
+    attach: getComputedStyle(app).backgroundAttachment,
+  };
+});
+check("nền app không dùng lớp fixed phủ ra ngoài .tc-app",
+  bgLayer.beforeContent === "none" && bgLayer.attach === "fixed");
 
 await page.goto(BASE + "/#/bophan", { waitUntil: "load" });
 await page.waitForTimeout(900);
