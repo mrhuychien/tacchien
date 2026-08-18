@@ -33,6 +33,7 @@ export async function render({ container, query }) {
     },
     data: null,
     bound: false,
+    acting: new Set(), // tín hiệu đang có request bay — chặn bấm chồng
   };
   bind();
   await load();
@@ -163,10 +164,21 @@ async function onClick(e) {
   await act(name, doIt, btn.dataset.preset);
 }
 
+// Chặn tái nhập: trước đây chỉ mờ đi bằng opacity nên vẫn bấm được nút thứ hai.
+// Bấm Resolve rồi Ack ngay thì act_on_signal (last-write-wins) ghi Acked, còn UI
+// đã chạy card.remove() theo response Resolve → người dùng tưởng đã Resolve.
+function setBusy(actions, busy) {
+  if (!actions) return;
+  actions.classList.toggle("tc-busy", busy);
+  actions.querySelectorAll("button").forEach((b) => { b.disabled = busy; });
+}
+
 async function act(name, action, preset) {
+  if (S.acting.has(name)) return;
   const card = S.container.querySelector(`[data-row="${name}"]`);
   const actions = card ? card.querySelector("[data-actions]") : null;
-  if (actions) actions.style.opacity = "0.5";
+  S.acting.add(name);
+  setBusy(actions, true);
   try {
     const res = await call("tacchien.api.signals.act_on_signal", { name, action, mute_preset: preset || null });
     showToast(`${name} → ${res.status}`, "success");
@@ -178,9 +190,11 @@ async function act(name, action, preset) {
       updateCard(card, res);
     }
   } catch (e) {
-    if (actions) actions.style.opacity = "";
+    setBusy(actions, false);
     showToast("Lỗi: " + (e.message || e), "error");
     load();
+  } finally {
+    S.acting.delete(name);
   }
 }
 
@@ -191,6 +205,5 @@ function updateCard(card, res) {
     st.textContent = res.status;
     st.className = "tc-badge-status tc-st-" + res.status.toLowerCase();
   }
-  const actions = card.querySelector("[data-actions]");
-  if (actions) actions.style.opacity = "";
+  setBusy(card.querySelector("[data-actions]"), false);
 }

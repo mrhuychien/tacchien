@@ -51,6 +51,31 @@ await page.waitForTimeout(400);
 const st = await page.locator('.tc-sig-card[data-row="SIG-00001"] [data-status]').textContent();
 check("Ack → Acked (" + st + ")", /Acked/.test(st));
 
+// Bấm chồng khi request đang bay phải bị CHẶN THẬT (opacity đơn thuần không chặn
+// được click → từng gây lệch UI/DB im lặng: DB Acked nhưng UI đã xoá thẻ).
+await page.goto(BASE + "/#/hanhdong", { waitUntil: "load" });
+await page.waitForTimeout(800);
+await page.evaluate(() => {
+  const orig = window.fetch;
+  window.fetch = async (...a) => {
+    if (String(a[0]).includes("act_on_signal")) await new Promise((r) => setTimeout(r, 600));
+    return orig(...a);
+  };
+});
+const busy = await page.evaluate(async () => {
+  const card = document.querySelector('.tc-sig-card[data-row="SIG-00001"]');
+  card.querySelector('[data-do="resolve"]').click();
+  await new Promise((r) => setTimeout(r, 120));
+  const actions = card.querySelector("[data-actions]");
+  return {
+    cls: actions.classList.contains("tc-busy"),
+    disabled: card.querySelector('[data-do="ack"]').disabled === true,
+    pe: getComputedStyle(actions).pointerEvents,
+  };
+});
+check("hành động đang chạy chặn được bấm chồng", busy.cls && busy.disabled && busy.pe === "none");
+await page.waitForTimeout(900);
+
 // alias #/signals vẫn ra Hành động
 await page.goto(BASE + "/#/signals", { waitUntil: "load" });
 await page.waitForTimeout(600);

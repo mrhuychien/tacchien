@@ -39,6 +39,14 @@
   --tc-warning: #ffc83f;           /* legend-sugar— P2, chậm */
   --tc-info:    #32bfe5;           /* legend-powder — P3 */
 
+  /* Sắc "vạch dấu" — dùng làm RUỘT của thanh accent/legend. Màu rực dùng làm glow
+     thì đẹp nhưng bản thân thanh chỉ 1.39–2.55:1 so với nền tint của chính ô
+     (P2 gần như vô hình). Bộ này đạt ≥3:1 trên cả nền tint lẫn --tc-surface. */
+  --tc-mark-success: #189449;
+  --tc-mark-danger:  #d93d22;
+  --tc-mark-warning: #a87907;
+  --tc-mark-info:    #1387a8;
+
   /* Sắc chữ đậm của từng ngữ nghĩa (dùng trên nền tint sáng, đạt WCAG AA) */
   --tc-on-success: #12633c;
   --tc-on-danger:  #a02d17;
@@ -241,21 +249,23 @@
 }
 /* Thanh phát sáng — port .flow-legend i của hgboard (chữ ký nhận diện) */
 .tc-health-cell::before {
+  /* Ruột dùng --tc-cell-mark để nhìn thấy được; quầng sáng vẫn dùng màu rực
+     --tc-cell-accent để giữ đúng chất .flow-legend của hgboard. */
   content: ""; flex: 0 0 auto; width: 26px; height: 5px; border-radius: var(--tc-radius-pill);
-  background: var(--tc-cell-accent, var(--tc-text-3));
+  background: var(--tc-cell-mark, var(--tc-text-3));
   box-shadow: 0 0 10px var(--tc-cell-accent, transparent);
 }
 .tc-health-cell:hover { transform: translateY(-2px); box-shadow: var(--tc-shadow-md); }
 .tc-health-name { line-height: 1.2; margin-bottom: auto; }
 .tc-health-count { align-self: flex-end; font: 700 1.05rem/1 var(--tc-font-display); letter-spacing: -0.03em; }
-.tc-cell-clean { --tc-cell-accent: var(--tc-success); background: rgba(67, 207, 120, 0.14); color: var(--tc-on-success); border-color: rgba(67, 207, 120, 0.30); }
-.tc-cell-p1    { --tc-cell-accent: var(--tc-danger);  background: rgba(255, 96, 70, 0.14);  color: var(--tc-on-danger);  border-color: rgba(255, 96, 70, 0.38); }
-.tc-cell-p2    { --tc-cell-accent: var(--tc-warning); background: rgba(255, 200, 63, 0.22); color: var(--tc-on-warning); border-color: rgba(255, 200, 63, 0.45); }
-.tc-cell-p3    { --tc-cell-accent: var(--tc-info);    background: rgba(50, 191, 229, 0.14); color: var(--tc-on-info);    border-color: rgba(50, 191, 229, 0.32); }
+.tc-cell-clean { --tc-cell-accent: var(--tc-success); --tc-cell-mark: var(--tc-mark-success); background: rgba(67, 207, 120, 0.14); color: var(--tc-on-success); border-color: rgba(67, 207, 120, 0.30); }
+.tc-cell-p1    { --tc-cell-accent: var(--tc-danger);  --tc-cell-mark: var(--tc-mark-danger);  background: rgba(255, 96, 70, 0.14);  color: var(--tc-on-danger);  border-color: rgba(255, 96, 70, 0.38); }
+.tc-cell-p2    { --tc-cell-accent: var(--tc-warning); --tc-cell-mark: var(--tc-mark-warning); background: rgba(255, 200, 63, 0.22); color: var(--tc-on-warning); border-color: rgba(255, 200, 63, 0.45); }
+.tc-cell-p3    { --tc-cell-accent: var(--tc-info);    --tc-cell-mark: var(--tc-mark-info);    background: rgba(50, 191, 229, 0.14); color: var(--tc-on-info);    border-color: rgba(50, 191, 229, 0.32); }
 /* P1 nhấp nháy vòng — port .stage-hotspot.active::before của hgboard */
 .tc-health-cell.tc-cell-p1::after {
   content: ""; position: absolute; inset: -1px; border-radius: inherit;
-  border: 1px solid var(--tc-danger); pointer-events: none;
+  border: 1px solid var(--tc-mark-danger); pointer-events: none;
   animation: tcRingPulse 2s ease-out infinite;
 }
 @keyframes tcRingPulse { 0% { opacity: 0.85; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
@@ -268,7 +278,7 @@
 }
 .tc-legend i {
   width: 26px; height: 5px; border-radius: var(--tc-radius-pill); flex-shrink: 0;
-  background: var(--tc-cell-accent); box-shadow: 0 0 10px var(--tc-cell-accent);
+  background: var(--tc-cell-mark); box-shadow: 0 0 10px var(--tc-cell-accent);
 }
 
 /* ── KPI grid ── */
@@ -419,6 +429,9 @@
 .tc-sig-meta { font-size: 0.74rem; color: var(--tc-text-2); margin-top: 5px; }
 .tc-sig-desc { font-size: 0.85rem; color: var(--tc-text); margin-top: 7px; }
 .tc-sig-actions { display: flex; gap: 0.45rem; margin-top: 0.8rem; align-items: center; }
+/* Trạng thái bận thật: opacity đơn thuần KHÔNG chặn click (nút vẫn bấm được) →
+   phải kèm pointer-events + disabled trên chính các nút. */
+.tc-sig-actions.tc-busy { opacity: 0.5; pointer-events: none; }
 .tc-badge-status { font-size: 0.62rem; font-weight: 700; padding: 4px 9px; border-radius: var(--tc-radius-pill); text-transform: uppercase; letter-spacing: 0.08em; }
 .tc-st-open     { background: rgba(50, 191, 229, 0.16); color: var(--tc-on-info); }
 .tc-st-acked    { background: rgba(255, 200, 63, 0.26); color: var(--tc-on-warning); }
