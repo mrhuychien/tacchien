@@ -20,7 +20,7 @@ export async function render({ container }) {
   setHTML(
     container,
     html`
-      ${viewBanner({ title: "Giám sát an toàn", subtitle: "Trạng thái các chỉ số — bấm để xử lý", badge: `${s.checks_off} tắt` })}
+      ${viewBanner({ eyebrow: "Trụ 2 · an toàn vận hành", title: "Giám sát an toàn", subtitle: "Trạng thái các chỉ số — bấm để xử lý", badge: `${s.checks_off} tắt` })}
       <div class="tc-kpi-grid">
         <div class="tc-kpi-card"><div class="tc-kpi-label">Nguy (P1)</div><div class="tc-kpi-value tc-txt-danger">${s.P1 || 0}</div></div>
         <div class="tc-kpi-card"><div class="tc-kpi-label">Cảnh báo (P2)</div><div class="tc-kpi-value">${s.P2 || 0}</div></div>

@@ -59,6 +59,16 @@ export function feedCard(rows, title, seeAllHref) {
   </div>`;
 }
 
+// Bảng màu chart — bám design token của shell.css (palette hgboard).
+const CHART = {
+  line: "#0d4d42",                  // --tc-green
+  fill: "rgba(217, 238, 117, 0.32)",// --tc-lime nhạt
+  ref: "#a3b0ac",                   // đường tham chiếu, xám ngả rêu
+  text: "#4a615c",                  // --tc-text-2
+  grid: "rgba(21, 53, 47, 0.10)",   // --tc-border
+  font: '"Be Vietnam Pro", -apple-system, sans-serif',
+};
+
 let _chartLibP = null;
 export function loadChartLib() {
   if (window.Chart) return Promise.resolve();
@@ -85,14 +95,18 @@ export async function drawSparkline(canvasId, sp, prev) {
     data: {
       labels: sp.labels.map((d) => d.slice(5)),
       datasets: [
-        { label: "Doanh thu", data: sp.revenue, borderColor: "#3b82f6", backgroundColor: "rgba(59,130,246,.12)", fill: true, tension: 0.3, pointRadius: 0 },
-        { label: "TB cùng thứ", data: sp.avg_same_weekday, borderColor: "#94a3b8", borderDash: [4, 4], fill: false, tension: 0.3, pointRadius: 0 },
+        // Palette hgboard: đường xanh rêu trên nền chanh nhạt; đường tham chiếu xám ink.
+        { label: "Doanh thu", data: sp.revenue, borderColor: CHART.line, backgroundColor: CHART.fill, borderWidth: 2.5, fill: true, tension: 0.3, pointRadius: 0 },
+        { label: "TB cùng thứ", data: sp.avg_same_weekday, borderColor: CHART.ref, borderDash: [4, 4], borderWidth: 1.5, fill: false, tension: 0.3, pointRadius: 0 },
       ],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
-      scales: { y: { ticks: { callback: (v) => formatVNDShort(v) } } },
+      plugins: { legend: { labels: { boxWidth: 12, color: CHART.text, font: { size: 11, family: CHART.font } } } },
+      scales: {
+        y: { ticks: { callback: (v) => formatVNDShort(v), color: CHART.text, font: { family: CHART.font } }, grid: { color: CHART.grid } },
+        x: { ticks: { color: CHART.text, font: { family: CHART.font } }, grid: { display: false } },
+      },
     },
   });
 }

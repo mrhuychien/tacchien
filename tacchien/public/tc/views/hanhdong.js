@@ -61,7 +61,7 @@ function paint() {
   setHTML(
     S.container,
     html`
-      ${viewBanner({ title: "Hành động", subtitle: `${d.total} việc cần xử lý`, badge: `Trang ${f.page}/${pages}` })}
+      ${viewBanner({ eyebrow: "Trụ 3 · hàng đợi xử lý", title: "Hành động", subtitle: `${d.total} việc cần xử lý`, badge: `Trang ${f.page}/${pages}` })}
       <div class="tc-card tc-filter-bar">
         ${sel("pillar", "Trụ", PILLARS.map((p) => p.key), f.pillar, "Tất cả", PILLARS)}
         ${sel("severity", "Mức", SEVERITIES, f.severity)}

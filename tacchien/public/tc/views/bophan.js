@@ -19,7 +19,7 @@ export async function render({ container }) {
   setHTML(
     container,
     html`
-      ${viewBanner({ title: "Nhịp bộ phận", subtitle: `Điểm tắc = draft quá ${d.sla_hours}h` })}
+      ${viewBanner({ eyebrow: "Nhịp vận hành · theo bộ phận", title: "Nhịp bộ phận", subtitle: `Điểm tắc = draft quá ${d.sla_hours}h` })}
       <div class="tc-card tc-mt-3">
         <table class="tc-table">
           <thead><tr><th>Bộ phận</th><th>Hôm nay</th><th>Điểm tắc</th><th>Cũ nhất</th><th>Trạng thái</th></tr></thead>

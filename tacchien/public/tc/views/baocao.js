@@ -3,8 +3,9 @@ import { call } from "../lib/api.js";
 import { html, setHTML } from "../lib/dom.js";
 import {
   kpiCard, signalsKpi, channelSub, feedCard, domainCell, drawSparkline,
-  formatVNDShort, formatNumber,
+  formatVNDShort, formatNumber, relTime,
 } from "../lib/widgets.js";
+import { viewBanner } from "../components/banner.js";
 
 const FLOW = { green: "Trôi chảy", amber: "Chậm", red: "Tắc" };
 let chart = null;
@@ -15,6 +16,12 @@ export async function render({ container }) {
   setHTML(
     container,
     html`
+      ${viewBanner({
+        eyebrow: "Trụ 1 · toàn cảnh hôm nay",
+        title: "Báo cáo hoạt động",
+        subtitle: `Cập nhật ${relTime(d.generated_at) || "vừa xong"}`,
+        badge: `${(m.signals_open.P1 || 0) + (m.signals_open.P2 || 0)} việc gấp`,
+      })}
       <div class="tc-kpi-grid">
         ${kpiCard("Doanh thu hôm nay", formatVNDShort(m.revenue_today), channelSub(m.revenue_by_channel))}
         ${kpiCard("Tiền về hôm nay", formatVNDShort(m.cash_in_today), "Payment Entry Receive")}

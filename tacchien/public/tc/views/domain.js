@@ -23,7 +23,7 @@ export async function render({ container, params }) {
   setHTML(
     container,
     html`
-      ${viewBanner({ title: domain, subtitle: `${d.signals.length} tín hiệu mở`, badge: d.deep ? "Chi tiết" : "" })}
+      ${viewBanner({ eyebrow: "Mảng nghiệp vụ", title: domain, subtitle: `${d.signals.length} tín hiệu mở`, badge: d.deep ? "Chi tiết" : "" })}
       ${detailBlock(d)}
       ${signalsBlock(d.signals)}`
   );
