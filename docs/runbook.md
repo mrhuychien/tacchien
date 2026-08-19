@@ -95,6 +95,17 @@ Trên `/tc#/luodo` kiểm 3 điều:
 3. Trên điện thoại: bản đồ cuộn ngang được và **tự kéo hotspot đang chọn vào giữa**;
    thẻ công đoạn nằm dưới bản đồ, không bị cắt.
 
+**f) Hiệu năng lưu đồ (bắt buộc nếu treo TV)** — đo trên chính máy sẽ treo:
+```js
+// dán vào Console ở /tc#/luodo, chờ 5 giây
+let n=0,t0=performance.now();(function f(){n++;performance.now()-t0<5000?requestAnimationFrame(f)
+ :console.log("fps≈",Math.round(n/(performance.now()-t0)*1000))})()
+```
+Ngưỡng: **≥ 40 fps** ở độ phân giải màn thật. Bản gốc hgboard dùng
+`filter: url(#glow)` (feGaussianBlur) — đo ở 1920×1080 chỉ được **22 fps**, frame
+xấu nhất 95ms. Ta đã thay bằng `drop-shadow` (Chromium tăng tốc GPU) → **~50 fps**,
+quầng sáng nhìn gần như y hệt. Nếu ai đó đưa `url(#…)` trở lại, harness sẽ FAIL.
+
 > Bảng neo công đoạn → mảng nằm ở đầu `public/tc/views/luodo.js` (hằng `STAGES`).
 > Đổi cách quy trách nhiệm cho công đoạn thì sửa đúng chỗ đó, không rải nơi khác.
 

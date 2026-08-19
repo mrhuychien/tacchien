@@ -17,7 +17,7 @@ check đã được mutation-test: cố tình tái tạo lỗi → harness FAIL,
 npm i playwright-core            # 1 lần
 # Chromium: đặt TC_CHROME nếu khác mặc định
 TC_CHROME=/path/to/chrome node tests/browser/server.mjs &   # cổng 8123
-node tests/browser/drive.mjs                                # 52 check, exit!=0 nếu fail
+node tests/browser/drive.mjs                                # 53 check, exit!=0 nếu fail
 ```
 
 ## Giới hạn (không thay bench)

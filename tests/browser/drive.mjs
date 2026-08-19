@@ -175,6 +175,17 @@ check("lưu đồ: công đoạn 04 xanh biển theo P3 của Chất lượng", 
 check("lưu đồ: công đoạn chưa có rule ra 'chưa giám sát', KHÔNG xanh giả",
   lo.s02 === "tc-lo-h-unwatched" && lo.s03 === "tc-lo-h-unwatched" && lo.s06 === "tc-lo-h-unwatched");
 check("lưu đồ: thẻ công đoạn liệt kê mảng đang gác", lo.domChips === 2);
+// SVG filter (feGaussianBlur) kéo màn từ 60 xuống 22 fps ở 1920×1080 — không chấp
+// nhận được với màn treo TV 24/7. Chỉ được dùng drop-shadow (GPU tăng tốc).
+const loFilter = await page.evaluate(() => {
+  const els = [...document.querySelectorAll(".tc-lo-overlay *")];
+  return {
+    dungSvgFilter: els.filter((e) => (getComputedStyle(e).filter || "").includes("url(")).length,
+    coDropShadow: els.filter((e) => (getComputedStyle(e).filter || "").includes("drop-shadow")).length,
+  };
+});
+check("lưu đồ: không dùng SVG filter (feGaussianBlur) — " + loFilter.dungSvgFilter + " phần tử",
+  loFilter.dungSvgFilter === 0 && loFilter.coDropShadow >= 10);
 // Đếm chip là chưa đủ: một lần sửa hụt đã làm mọi chip in "chưa có rule" trong
 // khi mock cho rules_ok=3. Phải soi ĐÚNG CHỮ.
 const chipTexts = await page.evaluate(() =>

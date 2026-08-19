@@ -358,7 +358,7 @@ function overlaySVG() {
     <path id="${id}" class="tc-lo-line tc-lo-line-${kind}" d="${d}" pathLength="1"></path>
     <path class="tc-lo-dashes tc-lo-dashes-${kind}" d="${d}" pathLength="1"></path>`;
   const particle = (pathId, color, dur, delay, r) => html`
-    <circle r="${r || 6}" fill="${color}" class="tc-lo-particle">
+    <circle r="${r || 6}" fill="${color}" style="color:${color}" class="tc-lo-particle">
       <animateMotion dur="${dur}s" begin="${delay || 0}s" repeatCount="indefinite" rotate="auto">
         <mpath href="#${pathId}"></mpath>
       </animateMotion>
@@ -366,13 +366,6 @@ function overlaySVG() {
 
   return html`
     <svg class="tc-lo-overlay" viewBox="0 0 1680 941" preserveAspectRatio="none" aria-hidden="true" data-lo-svg>
-      <defs>
-        <filter id="tc-lo-glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="5" result="blur"></feGaussianBlur>
-          <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
-        </filter>
-      </defs>
-
       ${line("tc-lo-bean", "bean", PATHS.bean)}
       ${line("tc-lo-sugar", "sugar", PATHS.sugar)}
       ${line("tc-lo-oil", "oil", PATHS.oil)}

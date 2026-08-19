@@ -576,13 +576,20 @@
 }
 .tc-lo-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
 
-/* ── Dòng nguyên liệu ── */
-.tc-lo-line { fill: none; filter: url(#tc-lo-glow); stroke-linecap: round; stroke-linejoin: round; stroke-width: 9; }
-.tc-lo-line-bean   { stroke: #ff6046; opacity: .58; }
-.tc-lo-line-sugar  { stroke: #ffc83f; opacity: .62; }
-.tc-lo-line-oil    { stroke: #43cf78; opacity: .62; }
-.tc-lo-line-cake   { stroke: #ff4fb3; opacity: .58; }
-.tc-lo-line-powder { stroke: #32bfe5; opacity: .65; }
+/* ── Dòng nguyên liệu ──
+   ⚠️ Bản gốc dùng filter: url(#glow) (feGaussianBlur). Đo trên 1920×1080: SVG
+   filter kéo cả màn xuống 22 fps (frame xấu nhất 95ms) — không chấp nhận được với
+   màn treo TV 24/7. drop-shadow được Chromium tăng tốc GPU, cho quầng sáng gần
+   như y hệt (đã so ảnh) mà lên 52 fps. Chi tiết đo: docs/runbook.md mục 3.f. */
+.tc-lo-line {
+  fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 9;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+.tc-lo-line-bean   { stroke: #ff6046; color: #ff6046; opacity: .58; }
+.tc-lo-line-sugar  { stroke: #ffc83f; color: #ffc83f; opacity: .62; }
+.tc-lo-line-oil    { stroke: #43cf78; color: #43cf78; opacity: .62; }
+.tc-lo-line-cake   { stroke: #ff4fb3; color: #ff4fb3; opacity: .58; }
+.tc-lo-line-powder { stroke: #32bfe5; color: #32bfe5; opacity: .65; }
 .tc-lo-dashes {
   fill: none; opacity: .92; stroke-dasharray: .012 .02; stroke-linecap: round; stroke-width: 3;
   animation: tcLoRouteFlow 20s linear infinite;
@@ -592,12 +599,14 @@
 .tc-lo-dashes-oil    { stroke: #c8ffda; animation-duration: 12s; }
 .tc-lo-dashes-cake   { stroke: #ffd2eb; animation-duration: 22s; }
 .tc-lo-dashes-powder { stroke: #d3f6ff; animation-duration: 14s; }
-.tc-lo-particle { filter: url(#tc-lo-glow); }
+.tc-lo-particle { filter: drop-shadow(0 0 4px currentColor); }
 .tc-lo-trolley rect { fill: #f8faf5; stroke: var(--tc-ink); stroke-width: 2; }
 .tc-lo-trolley circle { fill: var(--tc-ink); }
 
-/* ── Cụm máy đang chạy ── */
-.tc-lo-machines { color: #e9ff9c; filter: url(#tc-lo-glow); }
+/* ── Cụm máy đang chạy ──
+   KHÔNG gắn filter cho cả cụm: filter trên group tạo một raster khổng lồ, đo được
+   nó một mình chiếm 22→35 fps. Các phần tử máy đã đủ sáng nhờ màu + opacity. */
+.tc-lo-machines { color: #e9ff9c; }
 .tc-lo-machines path, .tc-lo-machines circle, .tc-lo-machines ellipse, .tc-lo-machines rect { vector-effect: non-scaling-stroke; }
 .tc-lo-loader path { opacity: .25; stroke: currentColor; stroke-dasharray: 6 10; stroke-width: 2; }
 .tc-lo-loader-dot { fill: var(--tc-lime); opacity: .75; animation: tcLoLoaderMove 8s linear infinite; }
