@@ -3,6 +3,7 @@ import { chromium } from "playwright-core";
 const EXE = process.env.TC_CHROME || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const BASE = "http://127.0.0.1:" + (process.env.TC_PORT || 8123);
 const errs = [];
+let reloadN = 0;   // goto cùng hash là no-op same-document → phải ép reload thật
 const log = [];
 
 const browser = await chromium.launch({ executablePath: EXE, args: ["--no-sandbox"] });
@@ -140,7 +141,7 @@ check("vòng nhấp nháy KHÔNG rò ra pill rollup (" + overlay.pillAfter + ")"
 check("rail = 2/3 ở trụ Giám sát (" + overlay.railWidth + "%)", overlay.railWidth === 67);
 
 // ── Lưu đồ xưởng (#/luodo) ──
-await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.goto(BASE + "/?r=" + (++reloadN) + "#/luodo", { waitUntil: "load" });
 await page.waitForTimeout(1600);
 const lo = await page.evaluate(() => {
   const hs = [...document.querySelectorAll(".tc-lo-hotspot")];
@@ -223,7 +224,39 @@ check("lưu đồ: mọi mảng canh được và sạch thì mới xanh (" + lo
   loFail.s01 === "tc-lo-h-clean");
 check("lưu đồ: badge nêu số công đoạn mù (" + loFail.badge + ")", /chưa canh/.test(loFail.badge || ""));
 
-await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.goto(BASE + "/?r=" + (++reloadN) + "#/luodo", { waitUntil: "load" });
+await page.waitForTimeout(1400);
+
+// #tc-view dùng chung cho mọi route → listener phải gỡ trong destroy(). Không gỡ
+// thì vào lại màn lần 2 có 2 listener, nút Tạm dừng toggle 2 lần và bấm không ăn
+// — tức cơ chế dừng mà WCAG 2.2.2 đòi đã chết.
+const loRebind = await page.evaluate(async () => {
+  location.hash = "#/";
+  await new Promise((r) => setTimeout(r, 900));
+  location.hash = "#/luodo";
+  await new Promise((r) => setTimeout(r, 1200));
+  const btn = document.querySelector("[data-lo=play]");
+  const truoc = btn.textContent.trim();
+  btn.click();
+  await new Promise((r) => setTimeout(r, 200));
+  return { truoc, sau: btn.textContent.trim() };
+});
+check("lưu đồ: nút Tạm dừng còn ăn sau khi vào lại màn (" + loRebind.truoc + " → " + loRebind.sau + ")",
+  loRebind.truoc !== loRebind.sau);
+
+// Cập nhật thẻ phải TẠI CHỖ: outerHTML huỷ node đang giữ focus → bàn phím văng về body.
+const loFocus = await page.evaluate(async () => {
+  const link = document.querySelector("[data-lo-active] .tc-lo-dom");
+  if (!link || !link.focus) return { skip: true };
+  link.focus();
+  const truoc = document.activeElement === link;
+  await window.APP.refresh();
+  await new Promise((r) => setTimeout(r, 400));
+  return { truoc, giuFocus: document.activeElement === link };
+});
+check("lưu đồ: poll không thổi focus bàn phím về body", loFocus.truoc && loFocus.giuFocus);
+
+await page.goto(BASE + "/?r=" + (++reloadN) + "#/luodo", { waitUntil: "load" });
 await page.waitForTimeout(1400);
 
 // Poll 60s KHÔNG được dựng lại overlay: dựng lại làm mọi animateMotion (SMIL)
@@ -241,7 +274,7 @@ check("lưu đồ: poll cập nhật tại chỗ, không dựng lại overlay",
 // prefers-reduced-motion phải dừng CẢ hạt SMIL. @media chỉ tắt được CSS animation
 // nên riêng chỗ này phải tắt bằng JS (svg.pauseAnimations).
 await page.emulateMedia({ reducedMotion: "reduce" });
-await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.goto(BASE + "/?r=" + (++reloadN) + "#/luodo", { waitUntil: "load" });
 await page.waitForTimeout(1500);
 const loRM = await page.evaluate(async () => {
   const pos = () => { const d = document.querySelector(".tc-lo-particle"); const m = d && d.getCTM && d.getCTM();
@@ -253,15 +286,16 @@ const loRM = await page.evaluate(async () => {
 check("lưu đồ: reduced-motion dừng cả hạt SMIL (" + loRM.truoc + " → " + loRM.sau + ")",
   loRM.truoc === loRM.sau && loRM.truoc !== "n/a");
 await page.emulateMedia({ reducedMotion: "no-preference" });
-await page.goto(BASE + "/#/luodo", { waitUntil: "load" });
+await page.goto(BASE + "/?r=" + (++reloadN) + "#/luodo", { waitUntil: "load" });
 await page.waitForTimeout(1500);
 
 await page.click('.tc-lo-nav-btn[data-lo-stage="3"]');
 await page.waitForTimeout(400);
 const loPick = await page.evaluate(async () => {
   const t = document.querySelector("[data-lo-active] strong")?.textContent.trim();
+  // Phải xét CẢ hai trục: có đoạn đường hạt chạy ngang thuần, chỉ đo trục dọc là flaky.
   const pos = () => { const d = document.querySelector(".tc-lo-particle"); const m = d && d.getCTM && d.getCTM();
-                      return m ? Math.round(m.f) : null; };
+                      return m ? Math.round(m.e) + "," + Math.round(m.f) : null; };
   const a = pos();
   await new Promise((r) => setTimeout(r, 900));
   return { title: t, banDoConChay: a !== pos() };

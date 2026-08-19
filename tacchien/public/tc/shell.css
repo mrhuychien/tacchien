@@ -655,14 +655,19 @@
 
 /* ── Hotspot: màu = severity của mảng đang gác công đoạn ── */
 .tc-lo-hotspot {
-  position: absolute; z-index: 4; width: 30px; height: 30px; border-radius: 50%;
+  /* 34 × scale(.78) ≈ 26,5px vùng bấm thật. Khai 30px thì hit area chỉ còn
+     23,4px vì transform thu nhỏ cả vùng nhận sự kiện. */
+  position: absolute; z-index: 4; width: 34px; height: 34px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   border: 1.5px solid var(--tc-ink);           /* ink chứ không trắng: 8.47:1 trên ảnh be */
   box-shadow: 0 5px 16px rgba(14,47,40,.28); cursor: pointer;
   transform: translate(-50%, -50%) scale(.78);
   transition: transform .35s ease, box-shadow .35s ease;
 }
-.tc-lo-hotspot span { color: var(--tc-ink); font: 700 9px/1 var(--tc-font-display); }
+.tc-lo-hotspot span { color: var(--tc-ink); font: 700 10px/1 var(--tc-font-display); }
+/* Quy tắc focus chung đặt border-radius 12px → hotspot tròn hoá vuông khi tab vào.
+   Outline cũng bị scale(.78) nên nâng lên 3px để nhìn ra ~2,3px. */
+.tc-lo-hotspot:focus-visible { border-radius: 50%; outline-width: 3px; }
 .tc-lo-hotspot:hover, .tc-lo-hotspot.tc-active { transform: translate(-50%, -50%) scale(1.05); }
 .tc-lo-h-p1        { background: var(--tc-danger-bright); }
 .tc-lo-h-p2        { background: var(--tc-warning); }
